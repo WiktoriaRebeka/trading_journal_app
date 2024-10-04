@@ -1,0 +1,29 @@
+# Ignorowanie środowiska wirtualnego
+venv/
+ENV/
+env/
+
+# Pliki związane z bazą danych SQLite (jeśli używasz, ale w Twoim przypadku używasz MySQL)
+*.sqlite3
+
+# Ignorowanie plików konfiguracyjnych i danych wrażliwych
+*.env
+
+# Pliki Pythona wygenerowane przez kompilator
+__pycache__/
+*.py[cod]
+
+# Logi i pliki systemowe
+*.log
+*.pot
+*.pyc
+*.pyo
+*.swp
+.DS_Store
+
+# Pliki statyczne i media (jeśli są generowane dynamicznie)
+static/
+media/
+
+# Ignorowanie migracji Django (opcjonalnie, ale zazwyczaj lepiej je śledzić)
+# migration files
