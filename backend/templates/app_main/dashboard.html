@@ -1,6 +1,8 @@
+{% load static %}
+
 <form method="POST" id="calculatorForm">
     {% csrf_token %}
-    
+
     <label for="currency">Waluta:</label>
     <select id="currency" name="currency">
         {% for currency in currencies %}
@@ -17,7 +19,7 @@
     <label for="risk_type">Jednostka ryzyka:</label>
     <select id="risk_type" name="risk_type">
         <option value="percent">%</option>
-        <option value="currency">Waluta (<span id="currency_label">{{ currencies.0.code }}</span>)</option> 
+        <option value="currency">Waluta (<span id="currency_label_risk"></span>)</option>
     </select>
 
     <label for="position">Wysokość pojedynczej pozycji:</label>
@@ -26,7 +28,7 @@
     <label for="position_type">Jednostka pozycji:</label>
     <select id="position_type" name="position_type">
         <option value="percent">%</option>
-        <option value="currency">Waluta (<span id="currency_label_position">{{ currencies.0.code }}</span>)</option>
+        <option value="currency">Waluta (<span id="currency_label_position"></span>)</option>
     </select>
 
     <label for="pair">Para walutowa:</label>
