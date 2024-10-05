@@ -2,6 +2,7 @@
 
 from django.db import models
 
+
 class Currency(models.Model):
     name = models.CharField(max_length=100)  # Nazwa waluty, np. dolar amerykański
     code = models.CharField(max_length=3)    # Kod waluty, np. USD
