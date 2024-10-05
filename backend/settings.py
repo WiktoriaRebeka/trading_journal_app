@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'users',
+    'backend',
 ]
 
 # Middleware
@@ -93,3 +94,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Twój e-mail z pliku .env
 # EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Hasło z pliku .env
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+)

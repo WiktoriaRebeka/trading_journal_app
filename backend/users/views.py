@@ -8,21 +8,47 @@ from .forms import LoginForm, RegisterForm
 from django.contrib.auth.models import User
 
 def login_view(request):
+    print("Funkcja login_view została wywołana")  # Debugging
     if request.method == 'POST':
+        print("POST request otrzymany")  # Debugging
         form = LoginForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            user = authenticate(request, username=email, password=password)
-            if user is not None and user.is_active:  # Sprawdzenie, czy konto jest aktywne
-                login(request, user)
-                return redirect('dashboard')  # Po zalogowaniu przekieruj na dashboard
+
+            # Logujemy dane wprowadzone przez użytkownika
+            print(f"Próba logowania - email: {email}, password: {password}")  # Debugging
+
+            # Spróbuj wyszukać użytkownika na podstawie adresu email
+            try:
+                user = User.objects.get(email=email)
+                print(f"Użytkownik znaleziony: {user.email}")  # Debugging
+            except User.DoesNotExist:
+                user = None
+                print("Użytkownik nie istnieje.")  # Debugging
+
+            # Jeśli użytkownik został znaleziony, sprawdzamy hasło
+            if user is not None and user.check_password(password):
+                if user.is_active:
+                    # Logowanie użytkownika
+                    login(request, user)
+                    print(f"Użytkownik zalogowany: {user.email}")  # Debugging
+                    return redirect('dashboard')
+                else:
+                    # Konto jest nieaktywne
+                    print(f"Konto nieaktywne: {user.email}")  # Debugging
+                    form.add_error(None, 'Konto jest nieaktywne.')
             else:
-                form.add_error(None, 'Niepoprawny email, hasło lub konto nieaktywne.')
+                # Niepoprawny email lub hasło
+                print("Błąd logowania: niepoprawny email lub hasło.")  # Debugging
+                form.add_error(None, 'Niepoprawny email lub hasło.')
+        else:
+            print("Formularz logowania nie jest poprawny.")  # Debugging
     else:
         form = LoginForm()
 
     return render(request, 'users/login.html', {'form': form})
+
 
 def dashboard_view(request):
     return render(request, 'app_main/dashboard.html')  # Zakładamy, że dashboard.html jest w templates/app_main
