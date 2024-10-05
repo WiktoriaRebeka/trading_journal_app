@@ -1,0 +1,3 @@
+<p>Witaj {{ user.username }},</p>
+<p>Dziękujemy za zarejestrowanie się na naszej stronie. Kliknij w poniższy link, aby aktywować swoje konto:</p>
+<a href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}">Aktywuj konto</a>

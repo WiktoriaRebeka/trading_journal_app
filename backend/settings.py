@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'users',
 ]
 
@@ -80,3 +81,15 @@ ROOT_URLCONF = 'backend.urls'
 
 # Aplikacja WSGI
 WSGI_APPLICATION = 'backend.wsgi.application'
+
+
+
+# SMTP Configuration (Gmail Example)
+# Tymczasowa konfiguracja e-maili - konsola
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Twój e-mail z pliku .env
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Hasło z pliku .env
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
