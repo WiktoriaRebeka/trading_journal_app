@@ -41,7 +41,7 @@
         {% endfor %}
     </datalist>
 
-    <label for="position_type">Typ pozycji:</label>
+    <label for="trade_type">Typ pozycji:</label>
     <select id="trade_type" name="trade_type" required>
         <option value="long">Long</option>
         <option value="short">Short</option>
@@ -54,11 +54,10 @@
     <input type="number" step="any" id="stop_loss" name="stop_loss" required>
 
     <label for="fee">Opłata giełdowa (%):</label>
-    <input type="number" step="0.0001" id="stop_loss" name="stop_loss" required>
+    <input type="number" step="0.0001" id="fee" name="fee" required> <!-- Poprawione id -->
 
     <button type="submit">Oblicz</button>
     <button type="button" id="reset_button">Rozpocznij nowy projekt</button>
-
 </form>
 
 <!-- Wyniki -->
