@@ -3,19 +3,42 @@ from .models import Currency, Pair
 from django.http import JsonResponse
 
 def dashboard_view(request):
+    print("Funkcja dashboard_view została wywołana")  # Sprawdzamy, czy funkcja jest w ogóle uruchamiana
+
     if request.method == 'POST':
+        print("Formularz został wysłany metodą POST")  # Sprawdzamy, czy żądanie jest typu POST
+        
+        # Zbierz dane z formularza
         currency = request.POST.get('currency')
-        deposit = float(request.POST.get('deposit'))
-        risk = float(request.POST.get('risk'))
+        deposit = request.POST.get('deposit')
+        risk = request.POST.get('risk')
         risk_type = request.POST.get('risk_type')
-        position = float(request.POST.get('position'))
+        position = request.POST.get('position')
         position_type = request.POST.get('position_type')
         pair_name = request.POST.get('pair')
-        entry = float(request.POST.get('entry'))
-        stop_loss = float(request.POST.get('stop_loss'))
-        fee = float(request.POST.get('fee', 0))  # Ustawienie domyślnej wartości 0, jeśli fee nie zostanie przesłane
+        entry = request.POST.get('entry')
+        stop_loss = request.POST.get('stop_loss')
+        fee = request.POST.get('fee', 0)
 
-        # Przetwarzanie ryzyka i pozycji
+        print(f"Data from form: currency={currency}, deposit={deposit}, risk={risk}, pair={pair_name}, entry={entry}")
+
+        # Dodaj logikę sprawdzania i przetwarzania formularza, podobnie jak wcześniej
+        try:
+            deposit = float(deposit)
+            risk = float(risk)
+            position = float(position)
+            entry = float(entry)
+            stop_loss = float(stop_loss)
+            fee = float(fee)
+        except ValueError:
+            print("Błąd konwersji danych z formularza")  # Sprawdzenie błędów konwersji
+            return render(request, 'app_main/dashboard.html', {
+                'error': 'Błędne dane w formularzu',
+                'currencies': Currency.objects.all(),
+                'pairs': Pair.objects.all(),
+            })
+
+        # Logika obliczeń i przetwarzania
         if risk_type == 'percent':
             risk_value = (risk / 100) * deposit
         else:
@@ -29,7 +52,6 @@ def dashboard_view(request):
         # Sprawdzenie czy para walutowa istnieje, jeśli nie – dodaj ją
         pair, created = Pair.objects.get_or_create(name=pair_name)
 
-        # Poprawne wcięcie dla logowania dodania pary
         if created:
             print(f"Nowa para walutowa dodana: {pair_name}")
         else:
@@ -47,7 +69,7 @@ def dashboard_view(request):
             'fee': fee,
         }
 
-        print(results)  # Wyświetlenie wyników w terminalu (zamiast JSON)
+        print("Wyniki obliczeń:", results)
 
     # Pobierz waluty i pary walutowe z bazy danych
     currencies = Currency.objects.all()
