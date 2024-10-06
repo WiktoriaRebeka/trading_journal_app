@@ -1,5 +1,3 @@
-# backend/views.py
-
 from django.shortcuts import render
 from .models import Currency, Pair
 from django.http import JsonResponse
@@ -17,7 +15,6 @@ def dashboard_view(request):
         stop_loss = float(request.POST.get('stop_loss'))
         fee = float(request.POST.get('fee', 0))  # Ustawienie domyślnej wartości 0, jeśli fee nie zostanie przesłane
 
-
         # Przetwarzanie ryzyka i pozycji
         if risk_type == 'percent':
             risk_value = (risk / 100) * deposit
@@ -31,6 +28,12 @@ def dashboard_view(request):
 
         # Sprawdzenie czy para walutowa istnieje, jeśli nie – dodaj ją
         pair, created = Pair.objects.get_or_create(name=pair_name)
+
+        # Poprawne wcięcie dla logowania dodania pary
+        if created:
+            print(f"Nowa para walutowa dodana: {pair_name}")
+        else:
+            print(f"Para walutowa już istnieje: {pair_name}")
 
         # Zwracanie wyników do terminala na razie
         results = {

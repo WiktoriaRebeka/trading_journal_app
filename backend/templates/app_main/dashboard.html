@@ -61,12 +61,65 @@
 </form>
 
 <!-- Wyniki -->
-<div id="results">
-    <p id="leverage"></p>
-    <p id="target1R"></p>
-    <p id="target2R"></p>
-    <p id="target3R"></p>
+<div id="results" style="display: none;"> <!-- Ukrywanie wyników na starcie -->
+    <p id="leverage"></p> <!-- Wyświetlanie koniecznego lewara -->
+
+    <!-- Tabela dla różnych maksymalnych lewarów -->
+    <table id="results_table">
+        <thead>
+            <tr>
+                <th>Maksymalny lewar</th>
+                <th>Konieczna wysokość pojedynczej pozycji (waluta) dla zachowania wysokości ryzyka</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>100x</td>
+                <td id="position_100x"></td>
+            </tr>
+            <tr>
+                <td>75x</td>
+                <td id="position_75x"></td>
+            </tr>
+            <tr>
+                <td>50x</td>
+                <td id="position_50x"></td>
+            </tr>
+            <tr>
+                <td>25x</td>
+                <td id="position_25x"></td>
+            </tr>
+            <tr>
+                <td>20x</td>
+                <td id="position_20x"></td>
+            </tr>
+        </tbody>
+    </table>
 </div>
+
+<!-- Tabela dla różnych targetów -->
+<table id="targets_table" style="display: none;">
+    <thead>
+        <tr>
+            <th>Target</th>
+            <th>Cena wyjścia</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1R</td>
+            <td id="target1R"></td>
+        </tr>
+        <tr>
+            <td>2R</td>
+            <td id="target2R"></td>
+        </tr>
+        <tr>
+            <td>3R</td>
+            <td id="target3R"></td>
+        </tr>
+    </tbody>
+</table>
 
 <div id="error_message" style="color: red;"></div>
 
