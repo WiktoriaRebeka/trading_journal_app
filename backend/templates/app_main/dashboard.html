@@ -21,7 +21,7 @@
         <option value="percent">%</option>
         <option value="currency">Waluta ({{ currencies.0.code }})</option> 
     </select>
-    <span id="currency_label_risk">{{ currencies.0.code }}</span> <!-- Waluta przy ryzyku -->
+    <span id="currency_label_risk">{{ currencies.0.code }}</span>
 
     <label for="position">Wysokość pojedynczej pozycji:</label>
     <input type="number" step="any" id="position" name="position" required>
@@ -31,7 +31,7 @@
         <option value="percent">%</option>
         <option value="currency">Waluta ({{ currencies.0.code }})</option>
     </select>
-    <span id="currency_label_position">{{ currencies.0.code }}</span> <!-- Waluta przy pozycji -->
+    <span id="currency_label_position">{{ currencies.0.code }}</span>
 
     <label for="pair">Para walutowa:</label>
     <input type="text" id="pair" name="pair" required list="pairs">
@@ -54,72 +54,69 @@
     <input type="number" step="any" id="stop_loss" name="stop_loss" required>
 
     <label for="fee">Opłata giełdowa (%):</label>
-    <input type="number" step="0.0001" id="fee" name="fee" required> <!-- Poprawione id -->
+    <input type="number" step="0.0001" id="fee" name="fee" required>
+
+    <!-- Pole wyboru targetu -->
+    <label for="target_choice">Wybierz target:</label>
+    <select id="target_choice" name="target_choice" required>
+        <option value="1R">1R</option>
+        <option value="2R">2R</option>
+        <option value="3R">3R</option>
+    </select>
+
+    <!-- Pole wyboru maksymalnego lewaru -->
+    <label for="leverage_choice">Wybierz maksymalny lewar:</label>
+    <select id="leverage_choice" name="leverage_choice" required>
+        <option value="100">100x</option>
+        <option value="75">75x</option>
+        <option value="50">50x</option>
+        <option value="25">25x</option>
+        <option value="20">20x</option>
+    </select>
 
     <button type="submit">Oblicz</button>
     <button type="button" id="reset_button">Rozpocznij nowy projekt</button>
 </form>
 
 <!-- Wyniki -->
-<div id="results" style="display: none;"> <!-- Ukrywanie wyników na starcie -->
-    <p id="leverage"></p> <!-- Wyświetlanie koniecznego lewara -->
+<!-- Wyniki -->
+<div id="results" style="display: none;">
+    <p id="leverage"></p>
 
-    <!-- Tabela dla różnych maksymalnych lewarów -->
-    <table id="results_table">
+    <!-- Wyświetlanie wybranego targetu i ceny wyjścia -->
+    <p>Wybrany target: <span id="selected_target"></span></p>
+    <table id="targets_table" style="display: none;">
         <thead>
             <tr>
-                <th>Maksymalny lewar</th>
-                <th>Konieczna wysokość pojedynczej pozycji (waluta) dla zachowania wysokości ryzyka</th>
+                <th>Target</th>
+                <th>Cena wyjścia</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>100x</td>
-                <td id="position_100x"></td>
-            </tr>
-            <tr>
-                <td>75x</td>
-                <td id="position_75x"></td>
-            </tr>
-            <tr>
-                <td>50x</td>
-                <td id="position_50x"></td>
-            </tr>
-            <tr>
-                <td>25x</td>
-                <td id="position_25x"></td>
-            </tr>
-            <tr>
-                <td>20x</td>
-                <td id="position_20x"></td>
+                <td id="chosenTarget"></td>
+                <td id="chosenTargetPrice"></td>
             </tr>
         </tbody>
     </table>
+
+    <!-- Wyświetlanie wybranego lewaru i pozycji -->
+    <p>Wybrany lewar: <span id="selected_leverage"></span></p>
+    <p>Konieczna wysokość pojedynczej pozycji: <span id="position_for_leverage"></span></p>
+
+    <!-- Dodajemy przycisk do obliczenia maksymalnego lewaru -->
+    <button type="button" id="calculate_max_leverage_button" style="display: none;">Wybierz max lewar</button>
+
+    <!-- Lista dla różnych maksymalnych lewarów -->
+    <ul id="max_leverage_list" style="display: none;">
+        <li><strong>100x:</strong> <span id="position_100x"></span></li>
+        <li><strong>75x:</strong> <span id="position_75x"></span></li>
+        <li><strong>50x:</strong> <span id="position_50x"></span></li>
+        <li><strong>25x:</strong> <span id="position_25x"></span></li>
+        <li><strong>20x:</strong> <span id="position_20x"></span></li>
+    </ul>
 </div>
 
-<!-- Tabela dla różnych targetów -->
-<table id="targets_table" style="display: none;">
-    <thead>
-        <tr>
-            <th>Target</th>
-            <th>Cena wyjścia</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>1R</td>
-            <td id="target1R"></td>
-        </tr>
-        <tr>
-            <td>2R</td>
-            <td id="target2R"></td>
-        </tr>
-        <tr>
-            <td>3R</td>
-            <td id="target3R"></td>
-        </tr>
-    </tbody>
-</table>
 
 <div id="error_message" style="color: red;"></div>
 
