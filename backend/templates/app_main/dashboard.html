@@ -19,8 +19,9 @@
     <label for="risk_type">Jednostka ryzyka:</label>
     <select id="risk_type" name="risk_type">
         <option value="percent">%</option>
-        <option value="currency">Waluta (<span id="currency_label_risk"></span>)</option>
+        <option value="currency">Waluta ({{ currencies.0.code }})</option> 
     </select>
+    <span id="currency_label_risk">{{ currencies.0.code }}</span> <!-- Waluta przy ryzyku -->
 
     <label for="position">Wysokość pojedynczej pozycji:</label>
     <input type="number" step="any" id="position" name="position" required>
@@ -28,8 +29,9 @@
     <label for="position_type">Jednostka pozycji:</label>
     <select id="position_type" name="position_type">
         <option value="percent">%</option>
-        <option value="currency">Waluta (<span id="currency_label_position"></span>)</option>
+        <option value="currency">Waluta ({{ currencies.0.code }})</option>
     </select>
+    <span id="currency_label_position">{{ currencies.0.code }}</span> <!-- Waluta przy pozycji -->
 
     <label for="pair">Para walutowa:</label>
     <input type="text" id="pair" name="pair" required list="pairs">
@@ -39,16 +41,24 @@
         {% endfor %}
     </datalist>
 
+    <label for="position_type">Typ pozycji:</label>
+    <select id="trade_type" name="trade_type" required>
+        <option value="long">Long</option>
+        <option value="short">Short</option>
+    </select>
+
     <label for="entry">Cena wejścia:</label>
-    <input type="number" step="any" id="entry" name="entry" required>
+    <input type="number" step="0.0001" id="entry" name="entry" required>
 
     <label for="stop_loss">Cena stop loss:</label>
     <input type="number" step="any" id="stop_loss" name="stop_loss" required>
 
     <label for="fee">Opłata giełdowa (%):</label>
-    <input type="number" step="any" id="fee" name="fee" required>
+    <input type="number" step="0.0001" id="stop_loss" name="stop_loss" required>
 
     <button type="submit">Oblicz</button>
+    <button type="button" id="reset_button">Rozpocznij nowy projekt</button>
+
 </form>
 
 <!-- Wyniki -->
@@ -58,5 +68,7 @@
     <p id="target2R"></p>
     <p id="target3R"></p>
 </div>
+
+<div id="error_message" style="color: red;"></div>
 
 <script src="{% static 'js/dashboard.js' %}"></script>

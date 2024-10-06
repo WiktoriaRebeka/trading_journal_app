@@ -15,7 +15,8 @@ def dashboard_view(request):
         pair_name = request.POST.get('pair')
         entry = float(request.POST.get('entry'))
         stop_loss = float(request.POST.get('stop_loss'))
-        fee = float(request.POST.get('fee'))
+        fee = float(request.POST.get('fee', 0))  # Ustawienie domyślnej wartości 0, jeśli fee nie zostanie przesłane
+
 
         # Przetwarzanie ryzyka i pozycji
         if risk_type == 'percent':
