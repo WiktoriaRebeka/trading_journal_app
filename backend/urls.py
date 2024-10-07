@@ -11,5 +11,6 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('save_currency/', views.save_currency, name='save_currency'),
     path('journal/', views.journal_view, name='journal'),  # Ścieżka do dziennika
+    path('add-to-journal/', views.add_to_journal, name='add_to_journal'),
 
 ]

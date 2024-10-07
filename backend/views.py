@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .models import Currency, Pair
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from .models import JournalEntry
 import json
 
 def dashboard_view(request):
@@ -100,3 +101,35 @@ def save_currency(request):
 
 def journal_view(request):
     return render(request, 'app_main/journal.html')
+
+
+
+@csrf_exempt
+def add_to_journal(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        # Tworzenie nowego wpisu w dzienniku
+        journal_entry = JournalEntry.objects.create(
+            user=request.user,
+            currency=data['currency'],
+            deposit=data['deposit'],
+            risk=data['risk'],
+            risk_type=data['risk_type'],
+            position=data['position'],
+            position_type=data['position_type'],
+            pair=data['pair'],
+            trade_type=data['trade_type'],
+            entry_price=data['entry'],
+            stop_loss=data['stop_loss'],
+            fee=data['fee'],
+            target_choice=data['target_choice'],
+            calculated_leverage=data['calculated_leverage'],
+            calculated_position=data['calculated_position']
+        )
+        journal_entry.save()
+
+        # Odpowiedź JSON potwierdzająca sukces
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False})
