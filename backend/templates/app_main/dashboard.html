@@ -19,9 +19,9 @@
     <label for="risk_type">Jednostka ryzyka:</label>
     <select id="risk_type" name="risk_type">
         <option value="percent">%</option>
-        <option value="currency">Waluta ({{ currencies.0.code }})</option> 
+        <option value="currency" id="currency_option"></option>
     </select>
-    <span id="currency_label_risk">{{ currencies.0.code }}</span>
+
 
     <label for="position">Wysokość pojedynczej pozycji:</label>
     <input type="number" step="any" id="position" name="position" required>
@@ -29,9 +29,8 @@
     <label for="position_type">Jednostka pozycji:</label>
     <select id="position_type" name="position_type">
         <option value="percent">%</option>
-        <option value="currency">Waluta ({{ currencies.0.code }})</option>
+        <option value="currency" id="position_currency_option"></option>
     </select>
-    <span id="currency_label_position">{{ currencies.0.code }}</span>
 
     <label for="pair">Para walutowa:</label>
     <input type="text" id="pair" name="pair" required list="pairs">
@@ -67,7 +66,7 @@
     <button type="submit">Oblicz</button>
     <button type="button" id="reset_button">Rozpocznij nowy projekt</button>
 </form>
-
+<button type="button" id="open_journal_button">Otwórz dziennik</button>
 <!-- Wyniki -->
 <div id="results" style="display: none;">
     <p id="leverage"></p>
@@ -85,6 +84,7 @@
             <tr>
                 <td id="chosenTarget"></td>
                 <td id="chosenTargetPrice"></td>
+                <td><span id="chosenTargetPriceCurrency"></span></td>
             </tr>
         </tbody>
     </table>
@@ -105,9 +105,11 @@
 <div id="result_window" style="display: none; border: 1px solid black; padding: 10px; margin-top: 10px;">
     <h3>Wynik dla wybranego lewara:</h3>
     <p><strong>Wybrany lewar:</strong> <span id="display_selected_leverage"></span></p>
-    <p><strong>Wysokość pozycji:</strong> <span id="display_position_for_leverage"></span></p>
+    <p><strong>Wysokość pozycji:</strong> <span id="display_position_for_leverage"></span><span id="position_leverage_currency"></span></p>
 </div>
 </div>
+<!-- Przycisk przenoszący do dziennika -->
+
 
 <div id="error_message" style="color: red;"></div>
 

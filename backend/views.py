@@ -96,3 +96,7 @@ def save_currency(request):
             return JsonResponse({'status': 'error', 'message': 'Błąd dekodowania JSON'}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Niewłaściwa metoda HTTP'}, status=400)
+
+
+def journal_view(request):
+    return render(request, 'app_main/journal.html')
