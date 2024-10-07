@@ -64,21 +64,10 @@
         <option value="3R">3R</option>
     </select>
 
-    <!-- Pole wyboru maksymalnego lewaru -->
-    <label for="leverage_choice">Wybierz maksymalny lewar:</label>
-    <select id="leverage_choice" name="leverage_choice" required>
-        <option value="100">100x</option>
-        <option value="75">75x</option>
-        <option value="50">50x</option>
-        <option value="25">25x</option>
-        <option value="20">20x</option>
-    </select>
-
     <button type="submit">Oblicz</button>
     <button type="button" id="reset_button">Rozpocznij nowy projekt</button>
 </form>
 
-<!-- Wyniki -->
 <!-- Wyniki -->
 <div id="results" style="display: none;">
     <p id="leverage"></p>
@@ -100,24 +89,26 @@
         </tbody>
     </table>
 
-    <!-- Wyświetlanie wybranego lewaru i pozycji -->
-    <p>Wybrany lewar: <span id="selected_leverage"></span></p>
-    <p>Konieczna wysokość pojedynczej pozycji: <span id="position_for_leverage"></span></p>
+  <!-- Dodajemy przycisk do obliczenia maksymalnego lewaru -->
+<button type="button" id="calculate_max_leverage_button" style="display: none;">Wybierz max lewar</button>
 
-    <!-- Dodajemy przycisk do obliczenia maksymalnego lewaru -->
-    <button type="button" id="calculate_max_leverage_button" style="display: none;">Wybierz max lewar</button>
+<!-- Pole wyboru maksymalnego lewaru (wyświetla się po kliknięciu "Wybierz max lewar") -->
+<label for="leverage_choice" style="display: none;" id="leverage_label">Wybierz maksymalny lewar:</label>
+<select id="leverage_choice" name="leverage_choice" style="display: none;">
+    <option value="100">100x</option>
+    <option value="75">75x</option>
+    <option value="50">50x</option>
+    <option value="25">25x</option>
+    <option value="20">20x</option>
+</select>
 
-    <!-- Lista dla różnych maksymalnych lewarów -->
-    <ul id="max_leverage_list" style="display: none;">
-        <li><strong>100x:</strong> <span id="position_100x"></span></li>
-        <li><strong>75x:</strong> <span id="position_75x"></span></li>
-        <li><strong>50x:</strong> <span id="position_50x"></span></li>
-        <li><strong>25x:</strong> <span id="position_25x"></span></li>
-        <li><strong>20x:</strong> <span id="position_20x"></span></li>
-    </ul>
+<div id="result_window" style="display: none; border: 1px solid black; padding: 10px; margin-top: 10px;">
+    <h3>Wynik dla wybranego lewara:</h3>
+    <p><strong>Wybrany lewar:</strong> <span id="display_selected_leverage"></span></p>
+    <p><strong>Wysokość pozycji:</strong> <span id="display_position_for_leverage"></span></p>
 </div>
-
+</div>
 
 <div id="error_message" style="color: red;"></div>
 
-<script src="{% static 'js/dashboard.js' %}"></script>
+<script type="module" src="{% static 'js/dashboard.js' %}"></script>
