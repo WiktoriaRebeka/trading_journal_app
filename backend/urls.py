@@ -9,4 +9,5 @@ urlpatterns = [
     path('activate/<int:user_id>/', user_views.activate_account, name='activate'),  # Ścieżka aktywacji konta
     path('', user_views.login_view, name='login'),  # Ścieżka główna do logowania
     path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('save_currency/', views.save_currency, name='save_currency'),
 ]

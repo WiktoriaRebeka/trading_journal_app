@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from .models import Currency, Pair
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 def dashboard_view(request):
     print("Funkcja dashboard_view została wywołana")  # Sprawdzamy, czy funkcja jest w ogóle uruchamiana
@@ -76,3 +78,21 @@ def dashboard_view(request):
     pairs = Pair.objects.all()
 
     return render(request, 'app_main/dashboard.html', {'currencies': currencies, 'pairs': pairs})
+
+
+@csrf_exempt  # Używaj ostrożnie - jeśli korzystasz z tokena CSRF, nie musisz tego używać
+def save_currency(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            currency = data.get('currency')
+
+            # Zapisz walutę lub wykonaj inną logikę
+            print(f"Wybrana waluta: {currency}")
+
+            # Zwróć odpowiedź JSON
+            return JsonResponse({'status': 'success', 'currency': currency})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Błąd dekodowania JSON'}, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Niewłaściwa metoda HTTP'}, status=400)
