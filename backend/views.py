@@ -3,6 +3,8 @@ from .models import Currency, Pair
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import JournalEntry
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 import json
 
 def dashboard_view(request):
@@ -100,7 +102,8 @@ def save_currency(request):
 
 
 def journal_view(request):
-    return render(request, 'app_main/journal.html')
+    journal_entries = JournalEntry.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'app_main/journal.html', {'journal_entries': journal_entries})
 
 
 @csrf_exempt
@@ -144,6 +147,29 @@ def add_to_journal(request):
             return JsonResponse({'success': False, 'message': 'Błąd dekodowania JSON'}, status=400)
         except Exception as e:
             # Wyjątek ogólny - zwraca dokładny błąd w odpowiedzi
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+@csrf_exempt
+def update_win(request, entry_id):
+    if request.method == 'POST':
+        try:
+            # Pobierz wpis na podstawie ID
+            journal_entry = get_object_or_404(JournalEntry, id=entry_id)
+            
+            # Pobierz wartość "win" z formularza
+            win_choice = request.POST.get('win_choice')
+
+            # Zaktualizuj pole "win"
+            if win_choice in ['YES', 'NO']:
+                journal_entry.win = win_choice
+                journal_entry.save()
+
+            return JsonResponse({'success': True})
+
+        except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
