@@ -26,21 +26,22 @@
             <th>Stop Loss</th>
             <th>Wybrany target</th>
             <th>Win</th>
+            <th>Akcje</th> <!-- Dodanie kolumny dla akcji (np. usuń) -->
         </tr>
     </thead>
     <tbody>
         {% for entry in journal_entries %}
-        <tr>
+        <tr id="entry-row-{{ entry.id }}">
             <td>{{ entry.created_at }}</td>
             <td>{{ entry.currency }}</td>
-            <td>{{ entry.deposit|floatformat:2 }}</td> <!-- 2 miejsca po przecinku dla depozytu -->
-            <td>{{ entry.risk|floatformat:2 }}</td> <!-- 2 miejsca po przecinku dla ryzyka -->
-            <td>{{ entry.calculated_position|floatformat:2 }}</td> <!-- 2 miejsca po przecinku dla pozycji -->
-            <td>{{ entry.calculated_leverage|floatformat:0 }}</td> <!-- Brak miejsc po przecinku dla lewaru (wartość całkowita) -->
+            <td>{{ entry.deposit|floatformat:2 }}</td>
+            <td>{{ entry.risk|floatformat:2 }}</td>
+            <td>{{ entry.calculated_position|floatformat:2 }}</td>
+            <td>{{ entry.calculated_leverage|floatformat:0 }}</td>
             <td>{{ entry.pair }}</td>
             <td>{{ entry.trade_type }}</td>
-            <td>{{ entry.entry_price|floatformat:4 }}</td> <!-- 4 miejsca po przecinku dla ceny wejścia -->
-            <td>{{ entry.stop_loss|floatformat:4 }}</td> <!-- 4 miejsca po przecinku dla ceny stop loss -->
+            <td>{{ entry.entry_price|floatformat:4 }}</td>
+            <td>{{ entry.stop_loss|floatformat:4 }}</td>
             <td>{{ entry.target_choice }}</td>
             
             <td>
@@ -51,6 +52,10 @@
                         <option value="NO" {% if entry.win == 'NO' %}selected{% endif %}>NO</option>
                     </select>
                 </form>
+            </td>
+            <td>
+                <!-- Przycisk Usuń, który usunie dany wpis z dziennika -->
+                <button class="delete-entry-button" data-entry-id="{{ entry.id }}">Usuń</button>
             </td>
         </tr>
         {% endfor %}

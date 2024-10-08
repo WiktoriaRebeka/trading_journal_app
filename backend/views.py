@@ -1,17 +1,16 @@
-from django.shortcuts import render
-from .models import Currency, Pair
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import JournalEntry
-from django.shortcuts import redirect, get_object_or_404
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+from .models import Currency, Pair, JournalEntry
 import json
 
 def dashboard_view(request):
-    print("Funkcja dashboard_view została wywołana")  # Sprawdzamy, czy funkcja jest w ogóle uruchamiana
+    print("Funkcja dashboard_view została wywołana")
 
     if request.method == 'POST':
-        print("Formularz został wysłany metodą POST")  # Sprawdzamy, czy żądanie jest typu POST
+        print("Formularz został wysłany metodą POST")
         
         # Zbierz dane z formularza
         currency = request.POST.get('currency')
@@ -27,7 +26,6 @@ def dashboard_view(request):
 
         print(f"Data from form: currency={currency}, deposit={deposit}, risk={risk}, pair={pair_name}, entry={entry}")
 
-        # Dodaj logikę sprawdzania i przetwarzania formularza, podobnie jak wcześniej
         try:
             deposit = float(deposit)
             risk = float(risk)
@@ -36,33 +34,23 @@ def dashboard_view(request):
             stop_loss = float(stop_loss)
             fee = float(fee)
         except ValueError:
-            print("Błąd konwersji danych z formularza")  # Sprawdzenie błędów konwersji
+            print("Błąd konwersji danych z formularza")
             return render(request, 'app_main/dashboard.html', {
                 'error': 'Błędne dane w formularzu',
                 'currencies': Currency.objects.all(),
                 'pairs': Pair.objects.all(),
             })
 
-        # Logika obliczeń i przetwarzania
-        if risk_type == 'percent':
-            risk_value = (risk / 100) * deposit
-        else:
-            risk_value = risk
+        # Logika obliczeń
+        risk_value = (risk / 100) * deposit if risk_type == 'percent' else risk
+        position_value = (position / 100) * deposit if position_type == 'percent' else position
 
-        if position_type == 'percent':
-            position_value = (position / 100) * deposit
-        else:
-            position_value = position
-
-        # Sprawdzenie, czy para walutowa istnieje, jeśli nie – dodaj ją
         pair, created = Pair.objects.get_or_create(name=pair_name)
-
         if created:
             print(f"Nowa para walutowa dodana: {pair_name}")
         else:
             print(f"Para walutowa już istnieje: {pair_name}")
 
-        # Zwracanie wyników do terminala na razie
         results = {
             'currency': currency,
             'deposit': deposit,
@@ -76,24 +64,20 @@ def dashboard_view(request):
 
         print("Wyniki obliczeń:", results)
 
-    # Pobierz waluty i pary walutowe z bazy danych
     currencies = Currency.objects.all()
     pairs = Pair.objects.all()
 
     return render(request, 'app_main/dashboard.html', {'currencies': currencies, 'pairs': pairs})
 
 
-@csrf_exempt  # Używaj ostrożnie - jeśli korzystasz z tokena CSRF, nie musisz tego używać
+@csrf_exempt
 def save_currency(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
             currency = data.get('currency')
 
-            # Zapisz walutę lub wykonaj inną logikę
             print(f"Wybrana waluta: {currency}")
-
-            # Zwróć odpowiedź JSON
             return JsonResponse({'status': 'success', 'currency': currency})
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Błąd dekodowania JSON'}, status=400)
@@ -101,6 +85,7 @@ def save_currency(request):
     return JsonResponse({'status': 'error', 'message': 'Niewłaściwa metoda HTTP'}, status=400)
 
 
+@login_required
 def journal_view(request):
     journal_entries = JournalEntry.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'app_main/journal.html', {'journal_entries': journal_entries})
@@ -110,17 +95,14 @@ def journal_view(request):
 def add_to_journal(request):
     if request.method == 'POST':
         try:
-            # Próbujemy wczytać dane JSON z requesta
             data = json.loads(request.body)
-            print(data)  # Dodaj to, aby zobaczyć, co faktycznie przychodzi
-            
-            # Walidacja - upewnij się, że wszystkie wymagane pola istnieją
+            print(data)
+
             required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
             for field in required_fields:
                 if field not in data:
                     return JsonResponse({'success': False, 'message': f'Missing field: {field}'}, status=400)
 
-            # Tworzenie nowego wpisu w dzienniku
             journal_entry = JournalEntry.objects.create(
                 user=request.user,
                 currency=data['currency'],
@@ -140,13 +122,11 @@ def add_to_journal(request):
             )
             journal_entry.save()
 
-            # Odpowiedź JSON potwierdzająca sukces
             return JsonResponse({'success': True})
 
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'message': 'Błąd dekodowania JSON'}, status=400)
         except Exception as e:
-            # Wyjątek ogólny - zwraca dokładny błąd w odpowiedzi
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
@@ -156,13 +136,9 @@ def add_to_journal(request):
 def update_win(request, entry_id):
     if request.method == 'POST':
         try:
-            # Pobierz wpis na podstawie ID
-            journal_entry = get_object_or_404(JournalEntry, id=entry_id)
-            
-            # Pobierz wartość "win" z formularza
+            journal_entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
             win_choice = request.POST.get('win_choice')
 
-            # Zaktualizuj pole "win"
             if win_choice in ['YES', 'NO']:
                 journal_entry.win = win_choice
                 journal_entry.save()
@@ -173,3 +149,17 @@ def update_win(request, entry_id):
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+@require_http_methods(["DELETE"])
+@login_required
+def delete_entry(request, entry_id):
+    try:
+        entry = JournalEntry.objects.get(id=entry_id, user=request.user)
+        entry.delete()
+
+        return JsonResponse({'success': True})
+    except JournalEntry.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Wpis nie istnieje'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
