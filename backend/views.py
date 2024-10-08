@@ -103,33 +103,93 @@ def journal_view(request):
     return render(request, 'app_main/journal.html')
 
 
+@csrf_exempt
+def add_to_journal(request):
+    if request.method == 'POST':
+        try:
+            # Próbujemy wczytać dane JSON z requesta
+            data = json.loads(request.body)
+            print(data)  # Dodaj to, aby zobaczyć, co faktycznie przychodzi
+            
+            # Walidacja - upewnij się, że wszystkie wymagane pola istnieją
+            required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse({'success': False, 'message': f'Missing field: {field}'}, status=400)
+
+            # Tworzenie nowego wpisu w dzienniku
+            journal_entry = JournalEntry.objects.create(
+                user=request.user,
+                currency=data['currency'],
+                deposit=data['deposit'],
+                risk=data['risk'],
+                risk_type=data['risk_type'],
+                position=data['position'],
+                position_type=data['position_type'],
+                pair=data['pair'],
+                trade_type=data['trade_type'],
+                entry_price=data['entry'],
+                stop_loss=data['stop_loss'],
+                fee=data['fee'],
+                target_choice=data['target_choice'],
+                calculated_leverage=data['calculated_leverage'],
+                calculated_position=data['calculated_position']
+            )
+            journal_entry.save()
+
+            # Odpowiedź JSON potwierdzająca sukces
+            return JsonResponse({'success': True})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Błąd dekodowania JSON'}, status=400)
+        except Exception as e:
+            # Wyjątek ogólny - zwraca dokładny błąd w odpowiedzi
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
 
 @csrf_exempt
 def add_to_journal(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
+        try:
+            # Próbujemy wczytać dane JSON z requesta
+            data = json.loads(request.body)
+            
+            # Walidacja - upewnij się, że wszystkie wymagane pola istnieją
+            required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse({'success': False, 'message': f'Missing field: {field}'}, status=400)
 
-        # Tworzenie nowego wpisu w dzienniku
-        journal_entry = JournalEntry.objects.create(
-            user=request.user,
-            currency=data['currency'],
-            deposit=data['deposit'],
-            risk=data['risk'],
-            risk_type=data['risk_type'],
-            position=data['position'],
-            position_type=data['position_type'],
-            pair=data['pair'],
-            trade_type=data['trade_type'],
-            entry_price=data['entry'],
-            stop_loss=data['stop_loss'],
-            fee=data['fee'],
-            target_choice=data['target_choice'],
-            calculated_leverage=data['calculated_leverage'],
-            calculated_position=data['calculated_position']
-        )
-        journal_entry.save()
+            # Tworzenie nowego wpisu w dzienniku
+            journal_entry = JournalEntry.objects.create(
+                user=request.user,
+                currency=data['currency'],
+                deposit=data['deposit'],
+                risk=data['risk'],
+                risk_type=data['risk_type'],
+                position=data['position'],
+                position_type=data['position_type'],
+                pair=data['pair'],
+                trade_type=data['trade_type'],
+                entry_price=data['entry'],
+                stop_loss=data['stop_loss'],
+                fee=data['fee'],
+                target_choice=data['target_choice'],
+                calculated_leverage=data['calculated_leverage'],
+                calculated_position=data['calculated_position']
+            )
+            journal_entry.save()
 
-        # Odpowiedź JSON potwierdzająca sukces
-        return JsonResponse({'success': True})
+            # Odpowiedź JSON potwierdzająca sukces
+            return JsonResponse({'success': True})
 
-    return JsonResponse({'success': False})
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Błąd dekodowania JSON'}, status=400)
+        except Exception as e:
+            # Wyjątek ogólny - zwraca dokładny błąd w odpowiedzi
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)

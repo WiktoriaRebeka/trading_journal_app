@@ -66,21 +66,19 @@
     <button type="submit">Oblicz</button>
     <button type="button" id="reset_button">Rozpocznij nowy projekt</button>
 </form>
-<button type="button" id="add_to_journal_button">Dodaj do dziennika</button>
 
-<!-- Przycisk przenoszący do dziennika -->
-<button type="button" id="open_journal_button">Otwórz dziennik</button>
 
 <!-- Wyniki -->
 <div id="results" style="display: none;">
-    <p id="leverage"></p>
+    <p>Potrzebny lewar</p>
+    <p id="leverage"><span id="leverage_value"></span><span>x</span></p>
 
     <!-- Wyświetlanie wybranego targetu i ceny wyjścia -->
     <p>Wybrany target: <span id="selected_target"></span></p>
     <table id="targets_table" style="display: none;">
         <thead>
             <tr>
-                <th>Target</th>
+                <th>Wybrany target</th>
                 <th>Cena wyjścia</th>
             </tr>
         </thead>
@@ -93,6 +91,11 @@
         </tbody>
     </table>
 
+    <button type="button" id="add_to_journal_button">Dodaj do dziennika</button>
+
+    <button type="button" id="open_journal_button">Otwórz dziennik</button>
+<p>Jeżeli obliczony lewar jest niedostępny dla Twojej pary, wybierz maksymalny lewar z poniższej listy, a program obliczy odpowiednią wysokość pojedynczej 
+    pozycji</p>
   <!-- Dodajemy przycisk do obliczenia maksymalnego lewaru -->
 <button type="button" id="calculate_max_leverage_button" style="display: none;">Wybierz max lewar</button>
 
