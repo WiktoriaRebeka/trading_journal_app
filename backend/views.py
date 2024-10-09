@@ -5,6 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from .models import Currency, Pair, JournalEntry
 import json
+from django.db.models import Q
 
 def dashboard_view(request):
     print("Funkcja dashboard_view została wywołana")
@@ -85,11 +86,36 @@ def save_currency(request):
     return JsonResponse({'status': 'error', 'message': 'Niewłaściwa metoda HTTP'}, status=400)
 
 
+
 @login_required
 def journal_view(request):
+    # Pobranie wszystkich wpisów użytkownika
     journal_entries = JournalEntry.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'app_main/journal.html', {'journal_entries': journal_entries})
+    
+    # Pobieranie dostępnych par walutowych do wyboru w filtrze
+    pairs = Pair.objects.all()
 
+    # Pobieranie parametrów filtrowania z zapytania GET
+    pair_filter = request.GET.get('pair_filter')
+    trade_type_filter = request.GET.get('trade_type_filter')
+    target_filter = request.GET.get('target_filter')
+    win_filter = request.GET.get('win_filter')
+
+    # Filtrowanie według wybranych opcji
+    if pair_filter:
+        journal_entries = journal_entries.filter(pair=pair_filter)
+    if trade_type_filter:
+        journal_entries = journal_entries.filter(trade_type=trade_type_filter)
+    if target_filter:
+        journal_entries = journal_entries.filter(target_choice=target_filter)
+    if win_filter:
+        journal_entries = journal_entries.filter(win=win_filter)
+
+    # Renderowanie strony z przefiltrowanymi wpisami
+    return render(request, 'app_main/journal.html', {
+        'journal_entries': journal_entries,
+        'pairs': pairs,
+    })
 
 @csrf_exempt
 def add_to_journal(request):

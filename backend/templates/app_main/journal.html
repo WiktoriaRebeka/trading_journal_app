@@ -11,6 +11,42 @@
 
 <h1>Dziennik transakcji</h1>
 
+<!-- Formularz filtrowania -->
+<form method="GET" action="{% url 'journal' %}">
+    <label for="pair_filter">Para walutowa:</label>
+    <select name="pair_filter" id="pair_filter">
+        <option value="">Wszystkie</option>
+        {% for pair in pairs %}
+            <option value="{{ pair.name }}" {% if request.GET.pair_filter == pair.name %}selected{% endif %}>{{ pair.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="trade_type_filter">Typ transakcji:</label>
+    <select name="trade_type_filter" id="trade_type_filter">
+        <option value="">Wszystkie</option>
+        <option value="long" {% if request.GET.trade_type_filter == 'long' %}selected{% endif %}>Long</option>
+        <option value="short" {% if request.GET.trade_type_filter == 'short' %}selected{% endif %}>Short</option>
+    </select>
+
+    <label for="target_filter">Wybrany target:</label>
+    <select name="target_filter" id="target_filter">
+        <option value="">Wszystkie</option>
+        <option value="1R" {% if request.GET.target_filter == '1R' %}selected{% endif %}>1R</option>
+        <option value="2R" {% if request.GET.target_filter == '2R' %}selected{% endif %}>2R</option>
+        <option value="3R" {% if request.GET.target_filter == '3R' %}selected{% endif %}>3R</option>
+    </select>
+
+    <label for="win_filter">Win:</label>
+    <select name="win_filter" id="win_filter">
+        <option value="">Wszystkie</option>
+        <option value="YES" {% if request.GET.win_filter == 'YES' %}selected{% endif %}>YES</option>
+        <option value="NO" {% if request.GET.win_filter == 'NO' %}selected{% endif %}>NO</option>
+    </select>
+
+    <button type="submit">Filtruj</button>
+</form>
+
+<!-- Tabela z wpisami dziennika -->
 <table>
     <thead>
         <tr>
@@ -43,7 +79,6 @@
             <td>{{ entry.entry_price|floatformat:4 }}</td>
             <td>{{ entry.stop_loss|floatformat:4 }}</td>
             <td>{{ entry.target_choice }}</td>
-            
             <td>
                 <form method="POST" action="{% url 'update_win' entry.id %}">
                     {% csrf_token %}
