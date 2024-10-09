@@ -143,6 +143,7 @@ def add_to_journal(request):
                 stop_loss=data['stop_loss'],
                 fee=data['fee'],
                 target_choice=data['target_choice'],
+                target_price=data['target_price'],  
                 calculated_leverage=data['calculated_leverage'],
                 calculated_position=data['calculated_position']
             )

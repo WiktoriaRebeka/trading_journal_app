@@ -55,13 +55,31 @@
     <label for="fee">Opłata giełdowa (%):</label>
     <input type="number" step="0.0001" id="fee" name="fee" required>
 
-    <!-- Pole wyboru targetu -->
+
+    <label>
+        <input type="radio" name="target_mode" value="r" checked> Wybierz Risk Ratio 
+      </label>
+      <label>
+        <input type="radio" name="target_mode" value="custom_price"> Wprowadź cenę wyjścia
+      </label>
+      
+      <!-- Pole do wpisania ceny wyjścia, domyślnie ukryte -->
+<!-- Pole wyboru targetu (ukrywane, jeśli użytkownik wybierze cenę wyjścia) -->
+<div id="target_choice_wrapper">
     <label for="target_choice">Wybierz target:</label>
     <select id="target_choice" name="target_choice" required>
         <option value="1R">1R</option>
         <option value="2R">2R</option>
         <option value="3R">3R</option>
     </select>
+</div>
+
+<!-- Pole do wpisania ceny wyjścia, domyślnie ukryte -->
+<div id="custom_price_input" style="display:none;">
+    <label for="custom_exit_price">Cena wyjścia:</label>
+    <input type="number" step="any" id="custom_exit_price" name="custom_exit_price">
+</div>
+
 
     <button type="submit">Oblicz</button>
     <button type="button" id="reset_button">Rozpocznij nowy projekt</button>

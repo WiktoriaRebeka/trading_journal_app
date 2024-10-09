@@ -31,6 +31,7 @@ class JournalEntry(models.Model):
     stop_loss = models.DecimalField(max_digits=10, decimal_places=4)
     fee = models.DecimalField(max_digits=5, decimal_places=4)
     target_choice = models.CharField(max_length=5)
+    target_price = models.DecimalField(max_digits=10, decimal_places=4, default=0.0)
     calculated_leverage = models.DecimalField(max_digits=5, decimal_places=2)
     calculated_position = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
