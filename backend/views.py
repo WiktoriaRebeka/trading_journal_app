@@ -121,14 +121,20 @@ def journal_view(request):
 def add_to_journal(request):
     if request.method == 'POST':
         try:
+            # Wyświetlamy dane, które przychodzą na serwer
             data = json.loads(request.body)
-            print(data)
+            print("Dane przesłane do serwera:", data)
 
+            # Lista wymaganych pól
             required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
+
+            # Sprawdzamy, czy wszystkie wymagane pola są obecne
             for field in required_fields:
                 if field not in data:
+                    print(f"Brakujące pole: {field}")
                     return JsonResponse({'success': False, 'message': f'Missing field: {field}'}, status=400)
 
+            # Próba stworzenia nowego wpisu
             journal_entry = JournalEntry.objects.create(
                 user=request.user,
                 currency=data['currency'],
@@ -148,12 +154,14 @@ def add_to_journal(request):
                 calculated_position=data['calculated_position']
             )
             journal_entry.save()
-
+            print("Wpis został pomyślnie dodany")
             return JsonResponse({'success': True})
 
         except json.JSONDecodeError:
+            print("Błąd dekodowania JSON")
             return JsonResponse({'success': False, 'message': 'Błąd dekodowania JSON'}, status=400)
         except Exception as e:
+            print(f"Błąd serwera: {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
