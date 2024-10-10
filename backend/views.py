@@ -81,12 +81,16 @@ def save_currency(request):
             print(f"Wybrana waluta: {currency}")
             return JsonResponse({'status': 'success', 'currency': currency})
         except json.JSONDecodeError:
+            print("Błąd dekodowania JSON w save_currency")
             return JsonResponse({'status': 'error', 'message': 'Błąd dekodowania JSON'}, status=400)
 
+    print("Niewłaściwa metoda HTTP w save_currency")
     return JsonResponse({'status': 'error', 'message': 'Niewłaściwa metoda HTTP'}, status=400)
 
 @login_required
 def journal_view(request):
+    print("Wywołano journal_view")
+
     # Pobranie wszystkich wpisów użytkownika
     journal_entries = JournalEntry.objects.filter(user=request.user).order_by('-created_at')
     
@@ -101,15 +105,20 @@ def journal_view(request):
 
     # Filtrowanie według wybranych opcji
     if pair_filter:
+        print(f"Zastosowano filtr pary: {pair_filter}")
         journal_entries = journal_entries.filter(pair=pair_filter)
     if trade_type_filter:
+        print(f"Zastosowano filtr typu transakcji: {trade_type_filter}")
         journal_entries = journal_entries.filter(trade_type=trade_type_filter)
     if target_filter:
+        print(f"Zastosowano filtr celu: {target_filter}")
         journal_entries = journal_entries.filter(target_choice=target_filter)
     if win_filter:
+        print(f"Zastosowano filtr wygranej: {win_filter}")
         journal_entries = journal_entries.filter(win=win_filter)
 
     # Renderowanie strony z przefiltrowanymi wpisami
+    print(f"Liczba wpisów w dzienniku po filtracji: {journal_entries.count()}")
     return render(request, 'app_main/journal.html', {
         'journal_entries': journal_entries,
         'pairs': pairs,
@@ -168,14 +177,14 @@ def add_to_journal(request):
             return JsonResponse({'success': True})
 
         except json.JSONDecodeError:
-            print("Błąd dekodowania JSON")
+            print("Błąd dekodowania JSON w add_to_journal")
             return JsonResponse({'success': False, 'message': 'Błąd dekodowania JSON'}, status=400)
         except Exception as e:
-            print(f"Błąd serwera: {e}")
+            print(f"Błąd serwera w add_to_journal: {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
+    print("Niewłaściwa metoda HTTP w add_to_journal")
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
-
 
 
 @csrf_exempt
@@ -205,12 +214,14 @@ def update_win(request, entry_id):
             journal_entry.win = win_choice
             journal_entry.save()
 
+            print(f"Zaktualizowano wpis {entry_id} z wynikiem: {win_choice}")
             return JsonResponse({'success': True})
 
         except Exception as e:
             print(f"Error in update_win: {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
+    print("Niewłaściwa metoda HTTP w update_win")
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 
 @require_http_methods(["DELETE"])
@@ -219,11 +230,14 @@ def delete_entry(request, entry_id):
     try:
         entry = JournalEntry.objects.get(id=entry_id, user=request.user)
         entry.delete()
+        print(f"Usunięto wpis o ID {entry_id}")
 
         return JsonResponse({'success': True})
     except JournalEntry.DoesNotExist:
+        print(f"Wpis o ID {entry_id} nie istnieje")
         return JsonResponse({'success': False, 'message': 'Wpis nie istnieje'}, status=404)
     except Exception as e:
+        print(f"Błąd w delete_entry: {e}")
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 # Funkcja obliczająca wartość PnL dla "Win"
@@ -238,7 +252,8 @@ def calculateWin(risk_amount, target_choice):
         
         # Obliczamy PnL jako ryzyko pomnożone przez mnożnik
         pnl_value = risk_amount * Decimal(target_multiplier)  # Używamy Decimal do mnożenia
+        print(f"Calculated PnL for target_choice {target_choice}: {pnl_value}")
         return pnl_value
     except ValueError:
+        print("Błąd konwersji target_choice w calculateWin")
         return None
-
