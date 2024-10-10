@@ -151,7 +151,8 @@ def add_to_journal(request):
                 target_choice=data['target_choice'],
                 target_price=data['target_price'],  
                 calculated_leverage=data['calculated_leverage'],
-                calculated_position=data['calculated_position']
+                calculated_position=data['calculated_position'],
+                win=None  # Ustawienie pola 'win' na NULL przy tworzeniu nowego wpisu
             )
             journal_entry.save()
             print("Wpis został pomyślnie dodany")
@@ -174,9 +175,12 @@ def update_win(request, entry_id):
             journal_entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
             win_choice = request.POST.get('win_choice')
 
-            if win_choice in ['YES', 'NO']:
+            # Sprawdzenie, czy wybrano pustą wartość (czyli "Wybierz")
+            if win_choice == "":
+                journal_entry.win = None  # Ustaw na NULL, jeśli nie wybrano żadnej opcji
+            elif win_choice in ['YES', 'NO']:
                 journal_entry.win = win_choice
-                journal_entry.save()
+            journal_entry.save()
 
             return JsonResponse({'success': True})
 
