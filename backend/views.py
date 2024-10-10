@@ -131,11 +131,14 @@ def add_to_journal(request):
                     print(f"Brakujące pole: {field}")
                     return JsonResponse({'success': False, 'message': f'Missing field: {field}'}, status=400)
 
-            # Obliczamy wartość ryzyka
+            # Obliczamy wartość ryzyka i wygranej w walucie
             deposit = Decimal(data['deposit'])
             risk_value = Decimal(data['risk'])
             risk_type = data['risk_type']
             risk_amount = (risk_value / 100) * deposit if risk_type == 'percent' else risk_value
+
+            target_choice = data['target_choice']
+            win_amount = calculateWin(risk_amount, target_choice)
 
             # Tworzenie nowego wpisu w dzienniku
             journal_entry = JournalEntry.objects.create(
@@ -151,10 +154,12 @@ def add_to_journal(request):
                 entry_price=data['entry'],
                 stop_loss=data['stop_loss'],
                 fee=data['fee'],
-                target_choice=data['target_choice'],
+                target_choice=target_choice,
                 target_price=data['target_price'],  
                 calculated_leverage=data['calculated_leverage'],
                 calculated_position=data['calculated_position'],
+                calculated_risk_amount=risk_amount,  # Przypisujemy wartość obliczoną w walucie
+                calculated_win_amount=win_amount,    # Przypisujemy wartość wygranej w walucie
                 pnl=None,  # PnL początkowo ustawione na None
                 win=None  # Ustawienie pola 'win' na NULL przy tworzeniu nowego wpisu
             )
@@ -170,6 +175,7 @@ def add_to_journal(request):
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
 
 
 @csrf_exempt
@@ -222,13 +228,17 @@ def delete_entry(request, entry_id):
 
 # Funkcja obliczająca wartość PnL dla "Win"
 def calculateWin(risk_amount, target_choice):
-    # Zakładam, że target_choice zawiera wartość mnożnika (1R, 2R, 3R itd.)
     try:
-        # Sprawdzamy, czy target_choice jest liczbą (np. 1R, 2R)
-        target_multiplier = float(target_choice.replace("R", ""))  # Usuwamy "R" z wartości
+        # Sprawdź, czy target_choice jest liczbą, jeśli tak, bez użycia replace
+        if isinstance(target_choice, int) or isinstance(target_choice, float):
+            target_multiplier = float(target_choice)
+        else:
+            # Jeśli to jest string, usuń "R"
+            target_multiplier = float(target_choice.replace("R", ""))  # Usuwamy "R" z wartości
+        
         # Obliczamy PnL jako ryzyko pomnożone przez mnożnik
         pnl_value = risk_amount * Decimal(target_multiplier)  # Używamy Decimal do mnożenia
         return pnl_value
     except ValueError:
-        # Jeśli target_choice nie jest liczbą lub nieprawidłową wartością, zwracamy 0 lub None
         return None
+
