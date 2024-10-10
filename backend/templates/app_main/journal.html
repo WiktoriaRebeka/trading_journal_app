@@ -63,7 +63,8 @@
             <th>Risk Reward Ratio</th>
             <th>Cena wyjścia</th> 
             <th>Win</th>
-            <th>Akcje</th>
+            <th>PnL</th>
+            <th>Akcje</th> 
         </tr>
     </thead>
     <tbody>
@@ -80,7 +81,6 @@
             <td>{{ entry.entry_price|floatformat:4 }}</td>
             <td>{{ entry.stop_loss|floatformat:4 }}</td>
             <td>{{ entry.target_choice }}</td>
-            <td>{{ entry.target_price|floatformat:4 }}</td> <!-- Wyświetlamy cenę wyjścia -->
             <td>
                 <form method="POST" action="{% url 'update_win' entry.id %}">
                     {% csrf_token %}
@@ -91,7 +91,10 @@
                     </select>
                 </form>
             </td>
-            
+            <td class="pnl-cell" data-entry-id="{{ entry.id }}" data-win-amount="{{ entry.pnl }}" data-risk-amount="{{ entry.risk }}">
+                {{ entry.pnl|floatformat:2 }}
+            </td>            
+
             <td>
                 <button class="delete-entry-button" data-entry-id="{{ entry.id }}">Usuń</button>
             </td>
@@ -103,6 +106,7 @@
 
 <!-- Załączamy nasz skrypt JavaScript -->
 <script type="module" src="{% static 'js/journal_data.js' %}"></script>
+<script type="module" src="{% static 'js/calculations.js' %}"></script>
 
 </body>
 </html>

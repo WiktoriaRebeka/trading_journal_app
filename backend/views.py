@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Currency, Pair, JournalEntry
 import json
 from django.db.models import Q
+from decimal import Decimal  # Import Decimal
 
 def dashboard_view(request):
     print("Funkcja dashboard_view została wywołana")
@@ -70,7 +71,6 @@ def dashboard_view(request):
 
     return render(request, 'app_main/dashboard.html', {'currencies': currencies, 'pairs': pairs})
 
-
 @csrf_exempt
 def save_currency(request):
     if request.method == 'POST':
@@ -84,8 +84,6 @@ def save_currency(request):
             return JsonResponse({'status': 'error', 'message': 'Błąd dekodowania JSON'}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Niewłaściwa metoda HTTP'}, status=400)
-
-
 
 @login_required
 def journal_view(request):
@@ -117,30 +115,35 @@ def journal_view(request):
         'pairs': pairs,
     })
 
+
 @csrf_exempt
 def add_to_journal(request):
     if request.method == 'POST':
         try:
-            # Wyświetlamy dane, które przychodzą na serwer
             data = json.loads(request.body)
             print("Dane przesłane do serwera:", data)
 
             # Lista wymaganych pól
             required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
 
-            # Sprawdzamy, czy wszystkie wymagane pola są obecne
             for field in required_fields:
                 if field not in data:
                     print(f"Brakujące pole: {field}")
                     return JsonResponse({'success': False, 'message': f'Missing field: {field}'}, status=400)
 
-            # Próba stworzenia nowego wpisu
+            # Obliczamy wartość ryzyka
+            deposit = Decimal(data['deposit'])
+            risk_value = Decimal(data['risk'])
+            risk_type = data['risk_type']
+            risk_amount = (risk_value / 100) * deposit if risk_type == 'percent' else risk_value
+
+            # Tworzenie nowego wpisu w dzienniku
             journal_entry = JournalEntry.objects.create(
                 user=request.user,
                 currency=data['currency'],
-                deposit=data['deposit'],
-                risk=data['risk'],
-                risk_type=data['risk_type'],
+                deposit=deposit,
+                risk=risk_value,
+                risk_type=risk_type,
                 position=data['position'],
                 position_type=data['position_type'],
                 pair=data['pair'],
@@ -152,6 +155,7 @@ def add_to_journal(request):
                 target_price=data['target_price'],  
                 calculated_leverage=data['calculated_leverage'],
                 calculated_position=data['calculated_position'],
+                pnl=None,  # PnL początkowo ustawione na None
                 win=None  # Ustawienie pola 'win' na NULL przy tworzeniu nowego wpisu
             )
             journal_entry.save()
@@ -175,20 +179,33 @@ def update_win(request, entry_id):
             journal_entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
             win_choice = request.POST.get('win_choice')
 
-            # Sprawdzenie, czy wybrano pustą wartość (czyli "Wybierz")
-            if win_choice == "":
-                journal_entry.win = None  # Ustaw na NULL, jeśli nie wybrano żadnej opcji
-            elif win_choice in ['YES', 'NO']:
-                journal_entry.win = win_choice
+            # Pobieramy wartość ryzyka z bazy danych
+            risk_amount = Decimal(journal_entry.risk) 
+            print(f"Risk amount for entry {entry_id}: {risk_amount}")
+
+            if win_choice == "YES":
+                # Obliczamy wartość PnL za pomocą funkcji calculateWin
+                pnl_value = calculateWin(risk_amount, journal_entry.target_choice)
+                print(f"Calculated PnL for win YES: {pnl_value}")
+                journal_entry.pnl = pnl_value
+            elif win_choice == "NO":
+                # Ustawiamy PnL na ujemną wartość ryzyka
+                journal_entry.pnl = -risk_amount
+                print(f"Calculated PnL for win NO: {-risk_amount}")
+            else:
+                journal_entry.pnl = None  # Resetuje wartość PnL
+                print(f"Resetting PnL to None")
+
+            journal_entry.win = win_choice
             journal_entry.save()
 
             return JsonResponse({'success': True})
 
         except Exception as e:
+            print(f"Error in update_win: {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
-
 
 @require_http_methods(["DELETE"])
 @login_required
@@ -202,3 +219,16 @@ def delete_entry(request, entry_id):
         return JsonResponse({'success': False, 'message': 'Wpis nie istnieje'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+# Funkcja obliczająca wartość PnL dla "Win"
+def calculateWin(risk_amount, target_choice):
+    # Zakładam, że target_choice zawiera wartość mnożnika (1R, 2R, 3R itd.)
+    try:
+        # Sprawdzamy, czy target_choice jest liczbą (np. 1R, 2R)
+        target_multiplier = float(target_choice.replace("R", ""))  # Usuwamy "R" z wartości
+        # Obliczamy PnL jako ryzyko pomnożone przez mnożnik
+        pnl_value = risk_amount * Decimal(target_multiplier)  # Używamy Decimal do mnożenia
+        return pnl_value
+    except ValueError:
+        # Jeśli target_choice nie jest liczbą lub nieprawidłową wartością, zwracamy 0 lub None
+        return None
