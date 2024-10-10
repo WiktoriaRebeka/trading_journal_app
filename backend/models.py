@@ -35,7 +35,13 @@ class JournalEntry(models.Model):
     calculated_leverage = models.DecimalField(max_digits=5, decimal_places=2)
     calculated_position = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
-    win = models.CharField(max_length=3, choices=[('YES', 'YES'), ('NO', 'NO')], default='NO')
+    win = models.CharField(
+        max_length=3, 
+        choices=[('YES', 'YES'), ('NO', 'NO')], 
+        default='',  # Zmieniamy domyślną wartość na pustą
+        blank=True,  # Pozwalamy na puste wartości
+        null=True    # Dodajemy obsługę wartości null
+    )
 
     def __str__(self):
         return f'Entry for {self.pair} by {self.user}'

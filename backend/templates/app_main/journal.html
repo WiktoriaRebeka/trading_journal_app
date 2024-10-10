@@ -85,11 +85,13 @@
                 <form method="POST" action="{% url 'update_win' entry.id %}">
                     {% csrf_token %}
                     <select name="win_choice" class="win-choice-select" data-entry-id="{{ entry.id }}">
+                        <option value="" {% if entry.win == '' or entry.win is None %}selected{% endif %}>---Wybierz---</option>
                         <option value="YES" {% if entry.win == 'YES' %}selected{% endif %}>YES</option>
                         <option value="NO" {% if entry.win == 'NO' %}selected{% endif %}>NO</option>
                     </select>
                 </form>
             </td>
+            
             <td>
                 <button class="delete-entry-button" data-entry-id="{{ entry.id }}">Usuń</button>
             </td>
