@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from .models import Currency, Pair, JournalEntry
 import json
 from django.db.models import Q
-from decimal import Decimal  # Import Decimal
+from decimal import Decimal
+from .models import Pair
 
 def dashboard_view(request):
     print("Funkcja dashboard_view została wywołana")
@@ -91,6 +92,25 @@ def save_currency(request):
             return JsonResponse({'status': 'error', 'message': 'Błąd dekodowania JSON'}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Niewłaściwa metoda HTTP'}, status=400)
+
+@csrf_exempt
+def save_pair(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            pair_name = data.get('pair')
+
+            # Tworzenie nowej pary, jeśli jeszcze nie istnieje
+            pair, created = Pair.objects.get_or_create(name=pair_name)
+            if created:
+                return JsonResponse({'success': True, 'message': 'Nowa para zapisana'})
+            else:
+                return JsonResponse({'success': False, 'message': 'Para już istnieje'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    else:
+        return JsonResponse({'success': False, 'message': 'Niewłaściwa metoda HTTP'})
+
 
 @login_required
 def journal_view(request):
