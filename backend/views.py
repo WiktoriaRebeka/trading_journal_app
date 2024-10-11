@@ -112,21 +112,22 @@ def save_pair(request):
         return JsonResponse({'success': False, 'message': 'Niewłaściwa metoda HTTP'})
 
 
+
 @login_required
 def journal_view(request):
-    # Pobranie wszystkich wpisów użytkownika
+    # Pobieramy wszystkie wpisy użytkownika posortowane według daty stworzenia
     journal_entries = JournalEntry.objects.filter(user=request.user).order_by('-created_at')
-    
-    # Pobieranie dostępnych par walutowych do wyboru w filtrze
+
+    # Pobieramy dostępne pary do filtrowania
     pairs = Pair.objects.all()
 
-    # Pobieranie parametrów filtrowania z zapytania GET
+    # Pobieranie filtrów z GET requestu
     pair_filter = request.GET.get('pair_filter')
     trade_type_filter = request.GET.get('trade_type_filter')
     target_filter = request.GET.get('target_filter')
     win_filter = request.GET.get('win_filter')
 
-    # Filtrowanie według wybranych opcji
+    # Filtrowanie danych na podstawie przekazanych filtrów
     if pair_filter:
         journal_entries = journal_entries.filter(pair=pair_filter)
     if trade_type_filter:
@@ -136,12 +137,15 @@ def journal_view(request):
     if win_filter:
         journal_entries = journal_entries.filter(win=win_filter)
 
-    # Renderowanie strony z przefiltrowanymi wpisami
+    # Debugowanie - logowanie wartości calculated_risk_amount i calculated_win_amount
+    for entry in journal_entries:
+        print(f"Entry {entry.id}: calculated_risk_amount={entry.calculated_risk_amount}, calculated_win_amount={entry.calculated_win_amount}")
+
+    # Renderowanie strony z przefiltrowanymi wpisami oraz dostępne pary
     return render(request, 'app_main/journal.html', {
         'journal_entries': journal_entries,
         'pairs': pairs,
     })
-
 
 @csrf_exempt
 def add_to_journal(request):
@@ -218,26 +222,32 @@ def add_to_journal(request):
 def update_win(request, entry_id):
     if request.method == 'POST':
         try:
+            # Pobierz wpis z dziennika na podstawie entry_id
             journal_entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
             win_choice = request.POST.get('win_choice')
 
-            # Pobieramy wartość ryzyka z bazy danych
-            risk_amount = Decimal(journal_entry.risk) 
-            print(f"Risk amount for entry {entry_id}: {risk_amount}")
+            # Pobierz wcześniej obliczone wartości ryzyka i wygranej z bazy danych
+            risk_amount = journal_entry.calculated_risk_amount
+            win_amount = journal_entry.calculated_win_amount
 
+            if risk_amount is None or win_amount is None:
+                return JsonResponse({'success': False, 'message': 'Brak obliczonych wartości ryzyka lub wygranej.'}, status=400)
+
+            print(f"Risk amount for entry {entry_id}: {risk_amount}")
+            print(f"Win amount for entry {entry_id}: {win_amount}")
+
+            # Zaktualizuj PnL na podstawie wyboru YES/NO
             if win_choice == "YES":
-                # Obliczamy wartość PnL za pomocą funkcji calculateWin
-                pnl_value = calculateWin(risk_amount, journal_entry.target_choice)
-                print(f"Calculated PnL for win YES: {pnl_value}")
-                journal_entry.pnl = pnl_value
+                journal_entry.pnl = win_amount
+                print(f"Calculated PnL for win YES: {win_amount}")
             elif win_choice == "NO":
-                # Ustawiamy PnL na ujemną wartość ryzyka
                 journal_entry.pnl = -risk_amount
                 print(f"Calculated PnL for win NO: {-risk_amount}")
             else:
                 journal_entry.pnl = None  # Resetuje wartość PnL
                 print(f"Resetting PnL to None")
 
+            # Zaktualizuj status wygranej (win)
             journal_entry.win = win_choice
             journal_entry.save()
 
@@ -248,6 +258,7 @@ def update_win(request, entry_id):
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
 
 @require_http_methods(["DELETE"])
 @login_required
