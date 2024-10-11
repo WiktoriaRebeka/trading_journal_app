@@ -295,3 +295,32 @@ def calculateWin(risk_amount, target_choice):
     except ValueError:
         return None
 
+
+@login_required
+def reports_view(request):
+    return render(request, 'app_main/reports.html')
+
+
+@login_required
+def reports_view(request):
+    # Pobierz wszystkie wpisy użytkownika
+    journal_entries = JournalEntry.objects.filter(user=request.user)
+
+    # Policz ilość wpisów z "YES" i "NO"
+    total_entries = journal_entries.count()
+    yes_count = journal_entries.filter(win='YES').count()
+    no_count = journal_entries.filter(win='NO').count()
+
+    # Oblicz WinRate w procentach
+    if total_entries > 0:
+        win_rate = (yes_count / total_entries) * 100
+    else:
+        win_rate = 0  # Jeśli brak wpisów, ustawiamy WinRate na 0
+
+    # Przekaż dane do szablonu
+    return render(request, 'app_main/reports.html', {
+        'total_entries': total_entries,
+        'yes_count': yes_count,
+        'no_count': no_count,
+        'win_rate': win_rate,
+    })

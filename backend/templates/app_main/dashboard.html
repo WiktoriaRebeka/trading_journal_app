@@ -8,6 +8,13 @@
 </div>
 
 <button type="button" id="open_journal_button">Otwórz dziennik</button>
+<!-- templates/app_main/dashboard.html -->
+<a href="{% url 'reports' %}">
+    <button type="button">Przejdź do Raportów</button>
+</a>
+
+
+
 <form method="POST" id="calculatorForm">
     {% csrf_token %}
 

@@ -17,5 +17,6 @@ urlpatterns = [
     path('delete-entry/<int:entry_id>/', views.delete_entry, name='delete_entry'),
     path('save-pair/', views.save_pair, name='save_pair'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('reports/', views.reports_view, name='reports'), 
 
 ]

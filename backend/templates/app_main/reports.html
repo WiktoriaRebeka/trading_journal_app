@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raport WinRate</title>
+</head>
+<body>
+    <h1>Raport WinRate</h1>
+
+    <p>Łączna liczba transakcji: {{ total_entries }}</p>
+    <p>Liczba transakcji z wynikiem „YES”: {{ yes_count }}</p>
+    <p>Liczba transakcji z wynikiem „NO”: {{ no_count }}</p>
+    <p>WinRate: {{ win_rate }}%</p>
+
+    <a href="{% url 'dashboard' %}">
+        <button type="button">Powrót do Dashboardu</button>
+    </a>
+</body>
+</html>
