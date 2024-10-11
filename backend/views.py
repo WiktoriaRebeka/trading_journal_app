@@ -47,14 +47,30 @@ def dashboard_view(request):
         risk_value = (risk / 100) * deposit if risk_type == 'percent' else risk
         position_value = (position / 100) * deposit if position_type == 'percent' else position
 
+        # Zapis nowej pary
         pair, created = Pair.objects.get_or_create(name=pair_name)
         if created:
-            print(f"Nowa para walutowa dodana: {pair_name}")
+            print(f"Nowa para walutowa została utworzona: {pair_name}")
         else:
             print(f"Para walutowa już istnieje: {pair_name}")
 
-    # Ten print wyświetli wszystkie dostępne pary walutowe niezależnie od metody żądania
-    print("Wszystkie dostępne pary:", [p.name for p in Pair.objects.all()])
+        all_pairs = Pair.objects.all()
+        print("Wszystkie dostępne pary walutowe w bazie danych:")
+        for p in all_pairs:
+            print(f"Para: {p.name}")
+
+        results = {
+            'currency': currency,
+            'deposit': deposit,
+            'risk_value': risk_value,
+            'position_value': position_value,
+            'pair': pair.name,
+            'entry': entry,
+            'stop_loss': stop_loss,
+            'fee': fee,
+        }
+
+        print("Wyniki obliczeń:", results)
 
     currencies = Currency.objects.all()
     pairs = Pair.objects.all()
