@@ -91,9 +91,12 @@
                     </select>
                 </form>
             </td>
-            <td class="pnl-cell" data-entry-id="{{ entry.id }}" data-win-amount="{{ entry.pnl|default_if_none:0 }}" data-risk-amount="{{ entry.risk|floatformat:2 }}">
-                {{ entry.pnl|floatformat:2 }}
-            </td>            
+            <td class="pnl-cell" 
+            data-entry-id="{{ entry.id }}" 
+            data-risk-amount="{{ entry.calculated_risk_amount|floatformat:2 }}" 
+            data-win-amount="{{ entry.calculated_win_amount|floatformat:2 }}">
+            {{ entry.pnl|floatformat:2 }}
+            </td>           
 
             <td>
                 <button class="delete-entry-button" data-entry-id="{{ entry.id }}">Usuń</button>
