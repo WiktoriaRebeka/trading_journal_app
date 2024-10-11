@@ -1,4 +1,12 @@
 {% load static %}
+<div>
+    <h2>Witaj, {{ username }}!</h2>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Wyloguj</button>
+    </form>
+</div>
+
 <button type="button" id="open_journal_button">Otwórz dziennik</button>
 <form method="POST" id="calculatorForm">
     {% csrf_token %}

@@ -12,6 +12,8 @@ from .models import Pair
 def dashboard_view(request):
     print("Funkcja dashboard_view została wywołana")
 
+    username = request.user.username
+    
     if request.method == 'POST':
         print("Formularz został wysłany metodą POST")
         
@@ -76,7 +78,11 @@ def dashboard_view(request):
     currencies = Currency.objects.all()
     pairs = Pair.objects.all()
 
-    return render(request, 'app_main/dashboard.html', {'currencies': currencies, 'pairs': pairs})
+    return render(request, 'app_main/dashboard.html', {
+        'currencies': currencies,
+        'pairs': pairs,
+        'username': username  
+    })
 
 
 @csrf_exempt

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from users import views as user_views
 from . import views
@@ -15,5 +16,6 @@ urlpatterns = [
     path('update-win/<int:entry_id>/', views.update_win, name='update_win'),
     path('delete-entry/<int:entry_id>/', views.delete_entry, name='delete_entry'),
     path('save-pair/', views.save_pair, name='save_pair'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
 ]
