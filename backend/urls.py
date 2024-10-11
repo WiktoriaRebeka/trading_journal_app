@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from users import views as user_views
+from . import reports
 from . import views
 
 urlpatterns = [
@@ -17,6 +18,9 @@ urlpatterns = [
     path('delete-entry/<int:entry_id>/', views.delete_entry, name='delete_entry'),
     path('save-pair/', views.save_pair, name='save_pair'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('reports/', views.reports_view, name='reports'), 
+    path('reports/', reports.reports_view, name='reports'),
+    path('monthly-report/', reports.monthly_report_view, name='monthly_report'),
+    path('weekly-report/', reports.weekly_report_view, name='weekly_report'),
+    path('daily-report/', reports.daily_report_view, name='daily_report'),
 
 ]

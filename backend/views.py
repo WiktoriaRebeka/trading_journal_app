@@ -5,6 +5,8 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from .models import Currency, Pair, JournalEntry
 import json
+from django.utils import timezone
+from datetime import timedelta
 from django.db.models import Q
 from decimal import Decimal
 from .models import Pair
@@ -296,31 +298,85 @@ def calculateWin(risk_amount, target_choice):
         return None
 
 
-@login_required
-def reports_view(request):
-    return render(request, 'app_main/reports.html')
-
 
 @login_required
 def reports_view(request):
-    # Pobierz wszystkie wpisy użytkownika
-    journal_entries = JournalEntry.objects.filter(user=request.user)
+    # Pobierz bieżący czas
+    now = timezone.now()
 
-    # Policz ilość wpisów z "YES" i "NO"
-    total_entries = journal_entries.count()
-    yes_count = journal_entries.filter(win='YES').count()
-    no_count = journal_entries.filter(win='NO').count()
+    # Filtrujemy wpisy na podstawie "YES" i "NO" (transakcje zakończone)
+    journal_entries = JournalEntry.objects.filter(user=request.user).filter(win__in=['YES', 'NO'])
 
-    # Oblicz WinRate w procentach
-    if total_entries > 0:
-        win_rate = (yes_count / total_entries) * 100
+    # Liczba wszystkich transakcji z wynikiem "YES" i "NO"
+    yes_count_total = journal_entries.filter(win='YES').count()
+    no_count_total = journal_entries.filter(win='NO').count()
+    total_trades_total = yes_count_total + no_count_total
+
+    # Obliczamy ogólny WinRate
+    if total_trades_total > 0:
+        win_rate_total = round((yes_count_total / total_trades_total) * 100, 2)
     else:
-        win_rate = 0  # Jeśli brak wpisów, ustawiamy WinRate na 0
+        win_rate_total = 0
 
-    # Przekaż dane do szablonu
+    # ---- Raport miesięczny ----
+    one_month_ago = now - timedelta(days=30)
+    journal_entries_month = journal_entries.filter(created_at__gte=one_month_ago)
+
+    yes_count_month = journal_entries_month.filter(win='YES').count()
+    no_count_month = journal_entries_month.filter(win='NO').count()
+    total_trades_month = yes_count_month + no_count_month
+
+    if total_trades_month > 0:
+        win_rate_month = round((yes_count_month / total_trades_month) * 100, 2)
+    else:
+        win_rate_month = 0
+
+    # ---- Raport tygodniowy ----
+    one_week_ago = now - timedelta(days=7)
+    journal_entries_week = journal_entries.filter(created_at__gte=one_week_ago)
+
+    yes_count_week = journal_entries_week.filter(win='YES').count()
+    no_count_week = journal_entries_week.filter(win='NO').count()
+    total_trades_week = yes_count_week + no_count_week
+
+    if total_trades_week > 0:
+        win_rate_week = round((yes_count_week / total_trades_week) * 100, 2)
+    else:
+        win_rate_week = 0
+
+    # ---- Raport dzienny ----
+    one_day_ago = now - timedelta(days=1)
+    journal_entries_day = journal_entries.filter(created_at__gte=one_day_ago)
+
+    yes_count_day = journal_entries_day.filter(win='YES').count()
+    no_count_day = journal_entries_day.filter(win='NO').count()
+    total_trades_day = yes_count_day + no_count_day
+
+    if total_trades_day > 0:
+        win_rate_day = round((yes_count_day / total_trades_day) * 100, 2)
+    else:
+        win_rate_day = 0
+
+    # Przekazujemy wszystkie raporty do szablonu
     return render(request, 'app_main/reports.html', {
-        'total_entries': total_entries,
-        'yes_count': yes_count,
-        'no_count': no_count,
-        'win_rate': win_rate,
+        'total_trades_total': total_trades_total,
+        'yes_count_total': yes_count_total,
+        'no_count_total': no_count_total,
+        'win_rate_total': win_rate_total,
+
+        'total_trades_month': total_trades_month,
+        'yes_count_month': yes_count_month,
+        'no_count_month': no_count_month,
+        'win_rate_month': win_rate_month,
+
+        'total_trades_week': total_trades_week,
+        'yes_count_week': yes_count_week,
+        'no_count_week': no_count_week,
+        'win_rate_week': win_rate_week,
+
+        'total_trades_day': total_trades_day,
+        'yes_count_day': yes_count_day,
+        'no_count_day': no_count_day,
+        'win_rate_day': win_rate_day,
     })
+

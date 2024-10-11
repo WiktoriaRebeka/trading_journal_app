@@ -3,15 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raport WinRate</title>
+    <title>Raporty WinRate</title>
 </head>
 <body>
-    <h1>Raport WinRate</h1>
+    <h1>Raporty WinRate</h1>
 
-    <p>Łączna liczba transakcji: {{ total_entries }}</p>
-    <p>Liczba transakcji z wynikiem „YES”: {{ yes_count }}</p>
-    <p>Liczba transakcji z wynikiem „NO”: {{ no_count }}</p>
-    <p>WinRate: {{ win_rate }}%</p>
+    <!-- Ogólny raport -->
+    <div>
+        <h3>Raport WinRate - Total</h3>
+        <p>Liczba transakcji z wynikiem „YES” lub „NO”: {{ total_trades_total }}</p>
+        <p>Liczba transakcji z wynikiem „YES”: {{ yes_count_total }}</p>
+        <p>Liczba transakcji z wynikiem „NO”: {{ no_count_total }}</p>
+        <p>WinRate: {{ win_rate_total }}%</p>
+        <p>Średnie Risk-Reward Ratio (RRR): {{ average_rrr_total }}</p>
+    </div>
+
+    <!-- Raport miesięczny -->
+    <div>
+        <h3>Raport WinRate - Miesięczny</h3>
+        <p>Liczba transakcji z wynikiem „YES” lub „NO”: {{ total_trades_month }}</p>
+        <p>Liczba transakcji z wynikiem „YES”: {{ yes_count_month }}</p>
+        <p>Liczba transakcji z wynikiem „NO”: {{ no_count_month }}</p>
+        <p>WinRate: {{ win_rate_month }}%</p>
+        <p>Średnie Risk-Reward Ratio (RRR): {{ average_rrr_month }}</p>
+    </div>
+
+    <!-- Raport tygodniowy -->
+    <div>
+        <h3>Raport WinRate - Tygodniowy</h3>
+        <p>Liczba transakcji z wynikiem „YES” lub „NO”: {{ total_trades_week }}</p>
+        <p>Liczba transakcji z wynikiem „YES”: {{ yes_count_week }}</p>
+        <p>Liczba transakcji z wynikiem „NO”: {{ no_count_week }}</p>
+        <p>WinRate: {{ win_rate_week }}%</p>
+        <p>Średnie Risk-Reward Ratio (RRR): {{ average_rrr_week }}</p>
+    </div>
+
+    <!-- Raport dzienny -->
+    <div>
+        <h3>Raport WinRate - Dzienny</h3>
+        <p>Liczba transakcji z wynikiem „YES” lub „NO”: {{ total_trades_day }}</p>
+        <p>Liczba transakcji z wynikiem „YES”: {{ yes_count_day }}</p>
+        <p>Liczba transakcji z wynikiem „NO”: {{ no_count_day }}</p>
+        <p>WinRate: {{ win_rate_day }}%</p>
+        <p>Średnie Risk-Reward Ratio (RRR): {{ average_rrr_day }}</p>
+    </div>
 
     <a href="{% url 'dashboard' %}">
         <button type="button">Powrót do Dashboardu</button>
