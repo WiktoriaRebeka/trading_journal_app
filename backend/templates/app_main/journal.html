@@ -81,6 +81,8 @@
             <td>{{ entry.entry_price|floatformat:4 }}</td>
             <td>{{ entry.stop_loss|floatformat:4 }}</td>
             <td>{{ entry.target_choice }}</td>
+            <td>{{ entry.target_price|floatformat:4 }}</td> <!-- Wyświetlamy cenę wyjścia -->
+
             <td>
                 <form method="POST" action="{% url 'update_win' entry.id %}">
                     {% csrf_token %}

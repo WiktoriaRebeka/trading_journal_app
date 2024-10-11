@@ -53,23 +53,14 @@ def dashboard_view(request):
         else:
             print(f"Para walutowa już istnieje: {pair_name}")
 
-        results = {
-            'currency': currency,
-            'deposit': deposit,
-            'risk_value': risk_value,
-            'position_value': position_value,
-            'pair': pair.name,
-            'entry': entry,
-            'stop_loss': stop_loss,
-            'fee': fee,
-        }
-
-        print("Wyniki obliczeń:", results)
+    # Ten print wyświetli wszystkie dostępne pary walutowe niezależnie od metody żądania
+    print("Wszystkie dostępne pary:", [p.name for p in Pair.objects.all()])
 
     currencies = Currency.objects.all()
     pairs = Pair.objects.all()
 
     return render(request, 'app_main/dashboard.html', {'currencies': currencies, 'pairs': pairs})
+
 
 @csrf_exempt
 def save_currency(request):
