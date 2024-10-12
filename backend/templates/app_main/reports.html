@@ -15,7 +15,13 @@
         <p>Liczba transakcji z wynikiem „YES”: {{ yes_count_total }}</p>
         <p>Liczba transakcji z wynikiem „NO”: {{ no_count_total }}</p>
         <p>WinRate: {{ win_rate_total }}%</p>
-        <p>Średnie Risk-Reward Ratio (RRR): {{ average_rrr_total }}</p>
+        <p>Średnie Risk-Reward Ratio (RRR): {{ avg_rrr_total }}</p>
+        <p>Minimalny wymagany WinRate: {{ min_win_rate_total }}%</p>
+        {% if is_profitable_total %}
+            <p>Twoje prawdopodobieństwo wygranej jest wystarczające, aby być zyskownym.</p>
+        {% else %}
+            <p>Twoje prawdopodobieństwo wygranej jest zbyt niskie przy obecnym RRR.</p>
+        {% endif %}
     </div>
 
     <!-- Raport miesięczny -->
@@ -25,7 +31,13 @@
         <p>Liczba transakcji z wynikiem „YES”: {{ yes_count_month }}</p>
         <p>Liczba transakcji z wynikiem „NO”: {{ no_count_month }}</p>
         <p>WinRate: {{ win_rate_month }}%</p>
-        <p>Średnie Risk-Reward Ratio (RRR): {{ average_rrr_month }}</p>
+        <p>Średnie Risk-Reward Ratio (RRR): {{ avg_rrr_month }}</p>
+        <p>Minimalny wymagany WinRate: {{ min_win_rate_month }}%</p>
+        {% if is_profitable_month %}
+            <p>Twoje prawdopodobieństwo wygranej jest wystarczające, aby być zyskownym.</p>
+        {% else %}
+            <p>Twoje prawdopodobieństwo wygranej jest zbyt niskie przy obecnym RRR.</p>
+        {% endif %}
     </div>
 
     <!-- Raport tygodniowy -->
@@ -35,7 +47,13 @@
         <p>Liczba transakcji z wynikiem „YES”: {{ yes_count_week }}</p>
         <p>Liczba transakcji z wynikiem „NO”: {{ no_count_week }}</p>
         <p>WinRate: {{ win_rate_week }}%</p>
-        <p>Średnie Risk-Reward Ratio (RRR): {{ average_rrr_week }}</p>
+        <p>Średnie Risk-Reward Ratio (RRR): {{ avg_rrr_week }}</p>
+        <p>Minimalny wymagany WinRate: {{ min_win_rate_week }}%</p>
+        {% if is_profitable_week %}
+            <p>Twoje prawdopodobieństwo wygranej jest wystarczające, aby być zyskownym.</p>
+        {% else %}
+            <p>Twoje prawdopodobieństwo wygranej jest zbyt niskie przy obecnym RRR.</p>
+        {% endif %}
     </div>
 
     <!-- Raport dzienny -->
@@ -45,7 +63,13 @@
         <p>Liczba transakcji z wynikiem „YES”: {{ yes_count_day }}</p>
         <p>Liczba transakcji z wynikiem „NO”: {{ no_count_day }}</p>
         <p>WinRate: {{ win_rate_day }}%</p>
-        <p>Średnie Risk-Reward Ratio (RRR): {{ average_rrr_day }}</p>
+        <p>Średnie Risk-Reward Ratio (RRR): {{ avg_rrr_day }}</p>
+        <p>Minimalny wymagany WinRate: {{ min_win_rate_day }}%</p>
+        {% if is_profitable_day %}
+            <p>Twoje prawdopodobieństwo wygranej jest wystarczające, aby być zyskownym.</p>
+        {% else %}
+            <p>Twoje prawdopodobieństwo wygranej jest zbyt niskie przy obecnym RRR.</p>
+        {% endif %}
     </div>
 
     <a href="{% url 'dashboard' %}">
