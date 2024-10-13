@@ -1,37 +1,36 @@
 {% load static %}
-
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dziennik transakcji</title>
-    <a href="{% url 'dashboard' %}">Powrót do Dashboardu</a>
+    <title>Trade Journal</title>
+    <a href="{% url 'dashboard' %}">Back to Dashboard</a>
 </head>
 <body>
 
-<h1>Dziennik transakcji</h1>
+<h1>Trade Journal</h1>
 
-<!-- Formularz filtrowania -->
+<!-- Filter Form -->
 <form method="GET" action="{% url 'journal' %}">
-    <label for="pair_filter">Para walutowa:</label>
+    <label for="pair_filter">Currency Pair:</label>
     <select name="pair_filter" id="pair_filter">
-        <option value="">Wszystkie</option>
+        <option value="">All</option>
         {% for pair in pairs %}
             <option value="{{ pair.name }}" {% if request.GET.pair_filter == pair.name %}selected{% endif %}>{{ pair.name }}</option>
         {% endfor %}
     </select>
 
-    <label for="trade_type_filter">Typ transakcji:</label>
+    <label for="trade_type_filter">Trade Type:</label>
     <select name="trade_type_filter" id="trade_type_filter">
-        <option value="">Wszystkie</option>
+        <option value="">All</option>
         <option value="long" {% if request.GET.trade_type_filter == 'long' %}selected{% endif %}>Long</option>
         <option value="short" {% if request.GET.trade_type_filter == 'short' %}selected{% endif %}>Short</option>
     </select>
 
-    <label for="target_filter">Wybrany target:</label>
+    <label for="target_filter">Chosen Target:</label>
     <select name="target_filter" id="target_filter">
-        <option value="">Wszystkie</option>
+        <option value="">All</option>
         <option value="1R" {% if request.GET.target_filter == '1R' %}selected{% endif %}>1R</option>
         <option value="2R" {% if request.GET.target_filter == '2R' %}selected{% endif %}>2R</option>
         <option value="3R" {% if request.GET.target_filter == '3R' %}selected{% endif %}>3R</option>
@@ -39,33 +38,33 @@
 
     <label for="win_filter">Win:</label>
     <select name="win_filter" id="win_filter">
-        <option value="">Wszystkie</option>
+        <option value="">All</option>
         <option value="YES" {% if request.GET.win_filter == 'YES' %}selected{% endif %}>YES</option>
         <option value="NO" {% if request.GET.win_filter == 'NO' %}selected{% endif %}>NO</option>
     </select>
 
-    <button type="submit">Filtruj</button>
+    <button type="submit">Filter</button>
 </form>
 
-<!-- Tabela z wpisami dziennika -->
+<!-- Journal Entries Table -->
 <table>
     <thead>
         <tr>
-            <th>Data dodania</th>
-            <th>Waluta</th>
-            <th>Depozyt</th>
-            <th>Ryzyko [%]</th>
-            <th>Wysokość wejścia</th>
-            <th>Lewar</th>
-            <th>Para walutowa</th>
-            <th>Typ transakcji</th>
-            <th>Cena wejścia</th>
+            <th>Date Added</th>
+            <th>Currency</th>
+            <th>Deposit</th>
+            <th>Risk [%]</th>
+            <th>Position Size</th>
+            <th>Leverage</th>
+            <th>Currency Pair</th>
+            <th>Trade Type</th>
+            <th>Entry Price</th>
             <th>Stop Loss</th>
             <th>Risk Reward Ratio</th>
-            <th>Cena wyjścia</th> 
+            <th>Exit Price</th>
             <th>Win</th>
             <th>PnL</th>
-            <th>Akcje</th> 
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -82,13 +81,13 @@
             <td>{{ entry.entry_price|floatformat:4 }}</td>
             <td>{{ entry.stop_loss|floatformat:4 }}</td>
             <td>{{ entry.target_choice }}</td>
-            <td>{{ entry.target_price|floatformat:4 }}</td> <!-- Wyświetlamy cenę wyjścia -->
+            <td>{{ entry.target_price|floatformat:4 }}</td> <!-- Display Exit Price -->
 
             <td>
                 <form method="POST" action="{% url 'update_win' entry.id %}">
                     {% csrf_token %}
                     <select name="win_choice" class="win-choice-select" data-entry-id="{{ entry.id }}">
-                        <option value="" {% if entry.win == '' or entry.win is None %}selected{% endif %}>---Wybierz---</option>
+                        <option value="" {% if entry.win == '' or entry.win is None %}selected{% endif %}>---Choose---</option>
                         <option value="YES" {% if entry.win == 'YES' %}selected{% endif %}>YES</option>
                         <option value="NO" {% if entry.win == 'NO' %}selected{% endif %}>NO</option>
                     </select>
@@ -102,15 +101,13 @@
             </td>           
 
             <td>
-                <button class="delete-entry-button" data-entry-id="{{ entry.id }}">Usuń</button>
+                <button class="delete-entry-button" data-entry-id="{{ entry.id }}">Delete</button>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-
-<!-- Załączamy nasz skrypt JavaScript -->
 <script type="module" src="{% static 'js/journal_data.js' %}"></script>
 
 </body>

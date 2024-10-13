@@ -1,8 +1,8 @@
-<h2>Zarejestruj się</h2>
+<h2>Register</h2>
 <form method="POST">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Zarejestruj się</button>
+    <button type="submit">Register</button>
 </form>
 
-<p>Masz już konto? <a href="{% url 'login' %}">Zaloguj się</a></p> <!-- Link do logowania -->
+<p>Already have an account? <a href="{% url 'login' %}">Log in here</a></p> <!-- Link to login -->
