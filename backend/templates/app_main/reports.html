@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,11 +7,18 @@
     {% load static %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Ładowanie Plotly -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/calendar.css' %}"> <!-- Dodaj link do pliku CSS -->
-
 </head>
 <body>
     <h1>WinRate Reports</h1>
     <h3>Performance Calendar</h3>
+
+        <!-- Nawigacja między miesiącami -->
+        <div class="calendar-navigation">
+            <a href="{{ previous_month_url }}" class="nav-arrow">&lt;</a>  <!-- Strzałka do poprzedniego miesiąca -->
+            <span class="current-month">{{ current_month }}</span>  <!-- Nazwa miesiąca -->
+            <a href="{{ next_month_url }}" class="nav-arrow">&gt;</a>  <!-- Strzałka do następnego miesiąca -->
+        </div>
+        
     <div class="calendar-container">
         <!-- Puste komórki przed dniami z danymi -->
         {% for _ in empty_days_before %}
@@ -22,14 +27,14 @@
     
         <!-- Dni z danymi -->
         {% for day in daily_data %}
-        <div class="calendar-day {% if day.pnl >= 0 %}positive-pnl{% elif day.pnl is None %}empty-day{% else %}negative-pnl{% endif %}">
+        <div class="calendar-day {% if day.pnl >= 0 %}positive-pnl{% elif day.pnl is not none %}negative-pnl{% else %}empty{% endif %}">
             <div class="date">{{ day.date }}</div>
-            {% if day.pnl is not None %}
+            {% if day.pnl is not none %}
                 <div class="pnl">PnL: {{ day.pnl }}</div>
                 <div class="winrate">Winrate: {{ day.winrate }}%</div>
                 <div class="total-trades">Trades: {{ day.total_trades }}</div>
             {% else %}
-                <div class="no-trades">No Trades</div> <!-- Szare pole na dni bez tradów -->
+                <div class="no-trades">No Trades</div>
             {% endif %}
         </div>
         {% endfor %}
@@ -39,6 +44,7 @@
         <div class="calendar-day empty"></div>
         {% endfor %}
     </div>
+
     <!-- Total Report -->
     <div>
         <h3>WinRate Report - Total</h3>
@@ -79,7 +85,6 @@
         <div id="pie-chart-monthly">
             {{ pie_chart_monthly_html|safe }}
         </div>
-
     </div>
 
     <!-- Weekly Report -->
@@ -97,7 +102,6 @@
         <div id="pie-chart-weekly">
             {{ pie_chart_weekly_html|safe }}
         </div>
-
     </div>
 
     <!-- Daily Report -->

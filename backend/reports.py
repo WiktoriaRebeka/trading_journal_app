@@ -4,10 +4,8 @@ from .models import JournalEntry
 from .utils import calculate_report_data, get_report_for_period
 import plotly.graph_objects as go
 from django.utils import timezone
-from datetime import timedelta
-from django.db.models import Sum
-from django.db.models import Q, Case, When, IntegerField
-from django.db.models import Count
+from datetime import timedelta, date
+from django.db.models import Sum, Count, Case, When, IntegerField
 from calendar import monthrange
 from django.utils.timezone import now
 import logging
@@ -16,6 +14,12 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def reports_view(request):
+
+    # Pobierz wybrany miesiąc z parametrów URL (domyślnie aktualny miesiąc)
+    year = int(request.GET.get('year', now().year))
+    month = int(request.GET.get('month', now().month))
+
+    selected_date = date(year, month, 1)
     # Pobierz wszystkie transakcje użytkownika z wynikiem YES lub NO
     journal_entries = JournalEntry.objects.filter(user=request.user, win__in=['YES', 'NO'])
 
@@ -53,33 +57,52 @@ def reports_view(request):
     )
     bar_chart_pnl_html = bar_fig_pnl.to_html(full_html=False)
 
-    # Oblicz dzienny winrate (YES / (YES + NO))
+    # Oblicz dzienny winrate (YES / (YES + NO)) i przygotuj dane dla każdego dnia miesiąca
+    today = now().date()
+    first_day_of_month = today.replace(day=1)
+    days_in_month = monthrange(today.year, today.month)[1]  # Liczba dni w bieżącym miesiącu
+
     daily_data = []
-    for entry in daily_pnl_data:
-        date = entry['created_at__date']
-        pnl = entry['daily_pnl']
-        total_trades = entry['total_trades']
-        win_trades = entry['win_trades']
-        winrate = round((win_trades / total_trades) * 100, 2) if total_trades > 0 else 0  # Zaokrąglenie do 2 miejsc po przecinku
-        daily_data.append({
-        'date': date,
-        'pnl': pnl,
-        'total_trades': total_trades,
-        'winrate': winrate  # Zaokrąglone winrate
-    })
+    for day in range(1, days_in_month + 1):
+        current_date = date(today.year, today.month, day)
+        day_entry = next((entry for entry in daily_pnl_data if entry['created_at__date'] == current_date), None)
+
+        if day_entry:
+            pnl = day_entry['daily_pnl']
+            total_trades = day_entry['total_trades']
+            win_trades = day_entry['win_trades']
+            winrate = round((win_trades / total_trades) * 100, 2) if total_trades > 0 else 0
+            daily_data.append({
+                'date': current_date,
+                'pnl': pnl,
+                'total_trades': total_trades,
+                'winrate': winrate
+            })
+        else:
+            # Dodaj puste dni, gdzie nie było żadnych transakcji
+            daily_data.append({
+                'date': current_date,
+                'pnl': None,
+                'total_trades': 0,
+                'winrate': None
+            })
 
     # Logika do obliczenia pustych komórek na początku kalendarza
-    today = now().date()
-    days_in_month = monthrange(today.year, today.month)[1]
-    first_day_of_month = today.replace(day=1)
-    first_weekday_of_month = first_day_of_month.weekday()  # 0 to Monday
+    first_weekday_of_month = first_day_of_month.weekday()
 
     # Puste komórki przed pierwszym dniem miesiąca
-    empty_days_before = first_weekday_of_month
+    empty_days_before = [''] * first_weekday_of_month
 
     # Dodanie dodatkowych pustych komórek na końcu, aby zachować pełny układ
-    total_cells = empty_days_before + len(daily_data)
-    empty_days_after = (7 - total_cells % 7) % 7  # Uzupełnienie do pełnych tygodni
+    total_cells = first_weekday_of_month + len(daily_data)
+    empty_days_after = [''] * ((7 - total_cells % 7) % 7)  # Lista pustych miejsc
+
+
+    # Poprzedni i następny miesiąc (nawigacja strzałkami)
+    previous_month = selected_date - timedelta(days=1)
+    previous_month_url = f"?year={previous_month.year}&month={previous_month.month}"
+    next_month = selected_date + timedelta(days=days_in_month)
+    next_month_url = f"?year={next_month.year}&month={next_month.month}"
 
     # Przekazanie raportów i wykresów do szablonu
     return render(request, 'app_main/reports.html', {
@@ -88,8 +111,12 @@ def reports_view(request):
         'weekly_report': weekly_report,
         'daily_report': daily_report,
         'daily_data': daily_data,  # Przekazujemy dane do kalendarza
+        'empty_days_before': empty_days_before,  # Lista pustych dni przed pierwszym dniem miesiąca
+        'empty_days_after': empty_days_after,    # Lista pustych dni po ostatnim dniu miesiąca
         'pie_chart_total_html': pie_chart_total_html,  # Dodanie wykresu kołowego
         'bar_chart_pnl_html': bar_chart_pnl_html,      # Dodanie wykresu PnL
+        'previous_month_url': previous_month_url,  # URL do poprzedniego miesiąca
+        'next_month_url': next_month_url,  # URL do następnego miesiąca
     })
 
 
