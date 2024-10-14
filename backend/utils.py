@@ -3,7 +3,10 @@ from datetime import timedelta
 from django.utils import timezone
 
 def calculate_report_data(journal_entries):
-    """Funkcja pomocnicza do obliczania ogólnych statystyk."""
+    """
+    Funkcja pomocnicza do obliczania ogólnych statystyk na podstawie dziennika transakcji.
+    Zwraca słownik z liczbą transakcji, winrate i innymi statystykami.
+    """
     yes_count = journal_entries.filter(win='YES').count()
     no_count = journal_entries.filter(win='NO').count()
     total_trades = yes_count + no_count
@@ -23,12 +26,15 @@ def calculate_report_data(journal_entries):
         'is_profitable': is_profitable
     }
 
-
 def get_report_for_period(journal_entries, days=None):
-    """Funkcja pomocnicza do obliczania statystyk dla okresu (miesięczny, tygodniowy, dzienny)."""
+    """
+    Funkcja pomocnicza do obliczania statystyk dla określonego okresu (np. miesięczny, tygodniowy, dzienny).
+    Filtruje wpisy dziennika na podstawie daty i zwraca obliczone dane za pomocą calculate_report_data.
+    """
     now = timezone.now()
     if days:
         start_date = now - timedelta(days=days)
         journal_entries = journal_entries.filter(created_at__gte=start_date)
     
+    # Obliczanie raportu na podstawie przefiltrowanych danych
     return calculate_report_data(journal_entries)

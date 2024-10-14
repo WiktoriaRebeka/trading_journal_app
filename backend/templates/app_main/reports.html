@@ -1,14 +1,44 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WinRate Reports</title>
+    {% load static %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Ładowanie Plotly -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/calendar.css' %}"> <!-- Dodaj link do pliku CSS -->
+
 </head>
 <body>
     <h1>WinRate Reports</h1>
-
+    <h3>Performance Calendar</h3>
+    <div class="calendar-container">
+        <!-- Puste komórki przed dniami z danymi -->
+        {% for _ in empty_days_before %}
+        <div class="calendar-day empty"></div>
+        {% endfor %}
+    
+        <!-- Dni z danymi -->
+        {% for day in daily_data %}
+        <div class="calendar-day {% if day.pnl >= 0 %}positive-pnl{% elif day.pnl is None %}empty-day{% else %}negative-pnl{% endif %}">
+            <div class="date">{{ day.date }}</div>
+            {% if day.pnl is not None %}
+                <div class="pnl">PnL: {{ day.pnl }}</div>
+                <div class="winrate">Winrate: {{ day.winrate }}%</div>
+                <div class="total-trades">Trades: {{ day.total_trades }}</div>
+            {% else %}
+                <div class="no-trades">No Trades</div> <!-- Szare pole na dni bez tradów -->
+            {% endif %}
+        </div>
+        {% endfor %}
+    
+        <!-- Puste komórki po dniach z danymi -->
+        {% for _ in empty_days_after %}
+        <div class="calendar-day empty"></div>
+        {% endfor %}
+    </div>
     <!-- Total Report -->
     <div>
         <h3>WinRate Report - Total</h3>
@@ -21,9 +51,16 @@
         <p>Is profitable: {{ total_report.is_profitable }}</p>
 
         <!-- Wykres kołowy dla raportu total -->
+        <h4>WinRate Pie Chart</h4>
+        <div id="pie-chart-total">
+            {{ pie_chart_total_html|safe }}
+        </div>
+
         <div>
-            <h4>WinRate Pie Chart</h4>
-            {{ pie_chart_html|safe }}
+            <h3>Daily PnL for the Last 30 Days</h3>
+            <div id="bar-chart-daily">
+                {{ bar_chart_pnl_html|safe }}
+            </div>
         </div>
     </div>
 
@@ -37,6 +74,12 @@
         <p>Average Risk-Reward Ratio (RRR): {{ monthly_report.avg_rrr }}</p>
         <p>Minimum required WinRate: {{ monthly_report.min_win_rate }}%</p>
         <p>Is profitable: {{ monthly_report.is_profitable }}</p>
+
+        <h4>Monthly WinRate Pie Chart</h4>
+        <div id="pie-chart-monthly">
+            {{ pie_chart_monthly_html|safe }}
+        </div>
+
     </div>
 
     <!-- Weekly Report -->
@@ -49,6 +92,12 @@
         <p>Average Risk-Reward Ratio (RRR): {{ weekly_report.avg_rrr }}</p>
         <p>Minimum required WinRate: {{ weekly_report.min_win_rate }}%</p>
         <p>Is profitable: {{ weekly_report.is_profitable }}</p>
+
+        <h4>Weekly WinRate Pie Chart</h4>
+        <div id="pie-chart-weekly">
+            {{ pie_chart_weekly_html|safe }}
+        </div>
+
     </div>
 
     <!-- Daily Report -->
@@ -61,6 +110,11 @@
         <p>Average Risk-Reward Ratio (RRR): {{ daily_report.avg_rrr }}</p>
         <p>Minimum required WinRate: {{ daily_report.min_win_rate }}%</p>
         <p>Is profitable: {{ daily_report.is_profitable }}</p>
+
+        <h4>Daily WinRate Pie Chart</h4>
+        <div id="pie-chart-daily">
+            {{ pie_chart_daily_html|safe }}
+        </div>
     </div>
 
     <a href="{% url 'dashboard' %}">
