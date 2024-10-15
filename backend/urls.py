@@ -23,6 +23,8 @@ urlpatterns = [
     path('weekly-report/', reports.weekly_report_view, name='weekly_report'),
     path('daily-report/', reports.daily_report_view, name='daily_report'),
     path('load-add-entry-modal/', views.load_add_entry_modal, name='load_add_entry_modal'),
+    path('create-manual-entry/', views.create_manual_entry, name='create_manual_entry'),
+
 
 
 ]

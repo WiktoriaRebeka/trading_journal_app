@@ -11,14 +11,18 @@ from datetime import timedelta
 from django.db.models import Q
 from decimal import Decimal
 from .models import Pair
+from .calculations import (
+    calculate_position_based_on_leverage,
+    calculate_leverage_based_on_position,
+    calculate_risk_reward_ratio,
+    calculate_win
+)
 
 def dashboard_view(request):
-    print("Funkcja dashboard_view została wywołana")
 
     username = request.user.username
     
     if request.method == 'POST':
-        print("Formularz został wysłany metodą POST")
         
         # Zbierz dane z formularza
         currency = request.POST.get('currency')
@@ -32,8 +36,6 @@ def dashboard_view(request):
         stop_loss = request.POST.get('stop_loss')
         fee = request.POST.get('fee', 0)
 
-        print(f"Data from form: currency={currency}, deposit={deposit}, risk={risk}, pair={pair_name}, entry={entry}")
-
         try:
             deposit = float(deposit)
             risk = float(risk)
@@ -42,7 +44,6 @@ def dashboard_view(request):
             stop_loss = float(stop_loss)
             fee = float(fee)
         except ValueError:
-            print("Błąd konwersji danych z formularza")
             return render(request, 'app_main/dashboard.html', {
                 'error': 'Błędne dane w formularzu',
                 'currencies': Currency.objects.all(),
@@ -76,7 +77,6 @@ def dashboard_view(request):
             'fee': fee,
         }
 
-        print("Wyniki obliczeń:", results)
 
     currencies = Currency.objects.all()
     pairs = Pair.objects.all()
@@ -95,7 +95,6 @@ def save_currency(request):
             data = json.loads(request.body.decode('utf-8'))
             currency = data.get('currency')
 
-            print(f"Wybrana waluta: {currency}")
             return JsonResponse({'status': 'success', 'currency': currency})
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Błąd dekodowania JSON'}, status=400)
@@ -298,6 +297,104 @@ def calculateWin(risk_amount, target_choice):
     except ValueError:
         return None
 
+@csrf_exempt
+def create_manual_entry(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            print("Otrzymane dane z formularza:", data)  # Logowanie danych z formularza
 
-def load_add_entry_modal(request):
-    return render(request, 'app_main/add_entry_modal.html')
+            # Pobieranie danych z formularza
+            deposit = data.get('deposit')
+            print(f"Received deposit: {deposit}")
+            if deposit is None or deposit == '':
+                return JsonResponse({'success': False, 'message': 'Deposit is missing'}, status=400)
+            deposit = Decimal(deposit)
+
+            risk = data.get('risk')
+            print(f"Received risk: {risk}")
+            if risk is None or risk == '':
+                return JsonResponse({'success': False, 'message': 'Risk is missing'}, status=400)
+            risk = Decimal(risk)
+
+            stop_loss = data.get('stop_loss')
+            print(f"Received stop_loss: {stop_loss}")
+            if stop_loss is None or stop_loss == '':
+                return JsonResponse({'success': False, 'message': 'Stop Loss is missing'}, status=400)
+            stop_loss = Decimal(stop_loss)
+
+            entry = data.get('entry')
+            print(f"Received entry: {entry}")
+            if entry is None or entry == '':
+                return JsonResponse({'success': False, 'message': 'Entry is missing'}, status=400)
+            entry = Decimal(entry)
+
+            # Pobieranie opcjonalnych pól
+            fee = Decimal(data.get('fee', 0))
+            print(f"Received fee: {fee}")
+            target_price = Decimal(data.get('target_price'))
+            print(f"Received target_price: {target_price}")
+
+            risk_type = data.get('risk_type', 'percent')
+            print(f"Received risk_type: {risk_type}")
+            win = data.get('win', 'NO')
+            print(f"Received win: {win}")
+            trade_type = data.get('trade_type', 'long')
+            print(f"Received trade_type: {trade_type}")
+
+            position = Decimal(data.get('position')) if data.get('position') else None
+            leverage = Decimal(data.get('leverage')) if data.get('leverage') else None
+            print(f"Received position: {position}, leverage: {leverage}")
+
+            if position is None and leverage is not None:
+                try:
+                    position = calculate_position_based_on_leverage(deposit, risk, leverage)
+                    print(f"Calculated position based on leverage: {position}")
+                except ZeroDivisionError:
+                    return JsonResponse({'success': False, 'message': 'Leverage cannot be zero'}, status=400)
+            elif leverage is None and position is not None:
+                try:
+                    leverage = calculate_leverage_based_on_position(deposit, risk, position)
+                    print(f"Calculated leverage based on position: {leverage}")
+                except ZeroDivisionError:
+                    return JsonResponse({'success': False, 'message': 'Position cannot be zero'}, status=400)
+
+            try:
+                risk_reward_ratio = calculate_risk_reward_ratio(entry, stop_loss, target_price)
+                print(f"Calculated Risk Reward Ratio: {risk_reward_ratio}")
+            except ZeroDivisionError as e:
+                return JsonResponse({'success': False, 'message': str(e)}, status=400)
+
+            try:
+                pnl = calculate_win(risk, risk_reward_ratio, win)
+                print(f"Calculated PnL: {pnl}")
+            except Exception as e:
+                print(f"Error calculating PnL: {e}")
+                return JsonResponse({'success': False, 'message': f'Error calculating PnL: {str(e)}'}, status=500)
+
+            journal_entry = JournalEntry.objects.create(
+                user=request.user,
+                currency=data.get('currency'),
+                deposit=deposit,
+                risk=risk,
+                risk_type=risk_type,
+                position=position,
+                position_type=data.get('position_type', 'currency'),
+                pair=data.get('pair'),
+                trade_type=trade_type,
+                entry_price=entry,
+                stop_loss=stop_loss,
+                fee=fee,
+                target_price=target_price,
+                calculated_leverage=leverage,
+                calculated_position=position,
+                pnl=pnl,
+                win=win
+            )
+            journal_entry.save()
+            print("Journal entry saved successfully")
+            return JsonResponse({'success': True})
+
+        except Exception as e:
+            print(f"Błąd serwera: {e}")
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)

@@ -1,73 +1,78 @@
-<!-- Modal do tworzenia nowego wpisu -->
-<div id="manual-entry-modal" class="modal" style="display:none;">
+{% load static %}
+<div id="manual-entry-modal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
-        <h3>Create an Entry</h3>
+        <h2>Add a New Entry</h2>
         <form id="manual-entry-form">
+            <label for="date_addedNE">Date Added:</label>
+            <input type="datetime-local" id="date_addedNE" name="date_addedNE" required>
+
+            <label for="currencyNE">Currency:</label>
+            <input type="text" id="currencyNE" name="currencyNE" required>
+
+            <label for="depositNE">Deposit:</label>
+            <input type="number" step="any" id="depositNE" name="depositNE" required>
+
+            <label for="feeNE">Exchange Fee (%):</label>
+            <input type="number" step="0.0001" id="feeNE" name="feeNE" required>
+
+            <label for="riskNE">Risk:</label>
+            <input type="number" step="any" id="riskNE" name="riskNE" required>
             
-            <!-- Data dodania -->
-            <label for="date_added">Date Added:</label>
-            <input type="datetime-local" id="date_added" name="date_added" required>
+            <label for="risk_typeNE">Risk Unit:</label>
+            <select id="risk_typeNE" name="risk_typeNE">
+                <option value="percent">%</option>
+                <option value="currency">Currency</option>
+            </select>
+            
+            <!-- Wybór między wielkością pozycji a lewarem -->
+            <label for="position_or_leverageNE">Position or Leverage:</label>
+            <label>
+                <input type="radio" name="position_or_leverageNE" value="position" checked> Position Size
+            </label>
+            <label>
+                <input type="radio" name="position_or_leverageNE" value="leverage"> Leverage
+            </label>
+            
+            <!-- Pole na wielkość pozycji, domyślnie widoczne -->
+            <div id="position-wrapperNE">
+                <label for="positionNE">Position Size:</label>
+                <input type="number" step="any" id="positionNE" name="positionNE">
+            </div>
+            
+            <!-- Pole na lewar, domyślnie ukryte -->
+            <div id="leverage-wrapperNE" style="display: none;">
+                <label for="leverageNE">Leverage:</label>
+                <input type="number" step="any" id="leverageNE" name="leverageNE">
+            </div>
 
-            <!-- Waluta -->
-            <label for="currency">Currency:</label>
-            <input type="text" id="currency" name="currency" required>
+            <label for="pairNE">Currency Pair:</label>
+            <input type="text" id="pairNE" name="pairNE" required>
 
-            <!-- Depozyt -->
-            <label for="deposit">Deposit:</label>
-            <input type="number" step="any" id="deposit" name="deposit" required>
-
-            <!-- Ryzyko -->
-            <label for="risk">Risk (%):</label>
-            <input type="number" step="any" id="risk" name="risk" required>
-
-            <!-- Rozmiar pozycji -->
-            <label for="position">Position Size:</label>
-            <input type="number" step="any" id="position" name="position" required>
-
-            <!-- Dźwignia -->
-            <label for="leverage">Leverage:</label>
-            <input type="number" step="any" id="leverage" name="leverage" required>
-
-            <!-- Para walutowa -->
-            <label for="pair">Currency Pair:</label>
-            <input type="text" id="pair" name="pair" required>
-
-            <!-- Typ trejdu -->
-            <label for="trade_type">Trade Type:</label>
-            <select id="trade_type" name="trade_type">
+            <label for="trade_typeNE">Trade Type:</label>
+            <select id="trade_typeNE" name="trade_typeNE">
                 <option value="long">Long</option>
                 <option value="short">Short</option>
             </select>
 
-            <!-- Cena wejścia -->
-            <label for="entry">Entry Price:</label>
-            <input type="number" step="0.0001" id="entry" name="entry" required>
+            <label for="entryNE">Entry Price:</label>
+            <input type="number" step="0.0001" id="entryNE" name="entryNE" required>
 
-            <!-- Stop Loss -->
-            <label for="stop_loss">Stop Loss:</label>
-            <input type="number" step="0.0001" id="stop_loss" name="stop_loss" required>
+            <label for="stop_lossNE">Stop Loss:</label>
+            <input type="number" step="0.0001" id="stop_lossNE" name="stop_lossNE" required>
 
-            <!-- Wskaźnik RRR (Risk Reward Ratio) -->
-            <label for="target_choice">Risk Reward Ratio (R):</label>
-            <input type="number" step="any" id="target_choice" name="target_choice" required>
+            <label for="target_priceNE">Exit Price:</label>
+            <input type="number" step="0.0001" id="target_priceNE" name="target_priceNE" required>
 
-            <!-- Cena wyjścia -->
-            <label for="target_price">Exit Price:</label>
-            <input type="number" step="0.0001" id="target_price" name="target_price" required>
-
-            <!-- Czy trejd zakończony sukcesem? -->
-            <label for="win">Win:</label>
-            <select id="win" name="win">
+            <label for="winNE">Win:</label>
+            <select id="winNE" name="winNE">
                 <option value="YES">YES</option>
                 <option value="NO">NO</option>
             </select>
 
-            <!-- Przycisk dodania wpisu -->
-            <button type="button" id="save-entry-button">Add Entry</button>
-
-            <!-- Przycisk anulowania wpisu -->
-            <button type="button" id="cancel-entry-button">Cancel</button>
+            <button type="button" id="save-entry-buttonNE">Add</button>
+            <button type="button" id="cancel-entry-buttonNE">Cancel</button>
         </form>
     </div>
 </div>
+<script type="module" src="{% static 'js/addNewEntry.js' %}"></script>
