@@ -10,10 +10,7 @@
 <body>
 
 <h1>Trade Journal</h1>
-
-<!-- Przycisk do dodania nowego wpisu -->
 <button id="create-entry-button">Add an Entry</button>
-
 <!-- Filter Form -->
 <form method="GET" action="{% url 'journal' %}">
     <label for="pair_filter">Currency Pair:</label>
@@ -111,65 +108,10 @@
     </tbody>
 </table>
 
-<!-- Modal do tworzenia wpisu -->
-<div id="manual-entry-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; z-index: 1000;">
-
-<div id="manual-entry-modal" style="display:none;">
-    <form id="manual-entry-form">
-        <h3>Create an Entry</h3>
-        
-        <label for="date_added">Date Added:</label>
-        <input type="datetime-local" id="date_added" name="date_added" required>
-
-        <label for="currency">Currency:</label>
-        <input type="text" id="currency" name="currency" required>
-
-        <label for="deposit">Deposit:</label>
-        <input type="number" step="any" id="deposit" name="deposit" required>
-
-        <label for="risk">Risk (%):</label>
-        <input type="number" step="any" id="risk" name="risk" required>
-
-        <label for="position">Position Size:</label>
-        <input type="number" step="any" id="position" name="position" required>
-
-        <label for="leverage">Leverage:</label>
-        <input type="number" step="any" id="leverage" name="leverage" required>
-
-        <label for="pair">Currency Pair:</label>
-        <input type="text" id="pair" name="pair" required>
-
-        <label for="trade_type">Trade Type:</label>
-        <select id="trade_type" name="trade_type">
-            <option value="long">Long</option>
-            <option value="short">Short</option>
-        </select>
-
-        <label for="entry">Entry Price:</label>
-        <input type="number" step="0.0001" id="entry" name="entry" required>
-
-        <label for="stop_loss">Stop Loss:</label>
-        <input type="number" step="0.0001" id="stop_loss" name="stop_loss" required>
-
-        <label for="target_choice">Risk Reward Ratio (R):</label>
-        <input type="number" step="any" id="target_choice" name="target_choice" required>
-
-        <label for="target_price">Exit Price:</label>
-        <input type="number" step="0.0001" id="target_price" name="target_price" required>
-
-        <label for="win">Win:</label>
-        <select id="win" name="win">
-            <option value="YES">YES</option>
-            <option value="NO">NO</option>
-        </select>
-
-        <button type="button" id="save-entry-button">Add</button>
-        <button type="button" id="cancel-entry-button">Cancel</button>
-    </form>
-</div>
-</div>
-
 <script type="module" src="{% static 'js/journal_data.js' %}"></script>
+<!-- Odwołanie do pliku addNewEntry.js -->
+<script type="module" src="{% static 'js/addNewEntry.js' %}"></script>
+
 
 </body>
 </html>
