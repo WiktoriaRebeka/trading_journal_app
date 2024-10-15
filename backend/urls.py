@@ -26,5 +26,4 @@ urlpatterns = [
     path('create-manual-entry/', views.create_manual_entry, name='create_manual_entry'),
 
 
-
 ]
