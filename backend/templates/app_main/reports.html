@@ -12,13 +12,13 @@
     <h1>WinRate Reports</h1>
     <h3>Performance Calendar</h3>
 
-        <!-- Nawigacja między miesiącami -->
-        <div class="calendar-navigation">
-            <a href="{{ previous_month_url }}" class="nav-arrow">&lt;</a>  <!-- Strzałka do poprzedniego miesiąca -->
-            <span class="current-month">{{ current_month }}</span>  <!-- Nazwa miesiąca -->
-            <a href="{{ next_month_url }}" class="nav-arrow">&gt;</a>  <!-- Strzałka do następnego miesiąca -->
-        </div>
-        
+    <!-- Nawigacja między miesiącami -->
+    <div class="calendar-navigation">
+        <a href="{{ previous_month_url }}" class="nav-arrow">&lt;</a>  <!-- Strzałka do poprzedniego miesiąca -->
+        <span class="current-month">{{ current_month }}</span>  <!-- Nazwa miesiąca -->
+        <a href="{{ next_month_url }}" class="nav-arrow">&gt;</a>  <!-- Strzałka do następnego miesiąca -->
+    </div>
+    
     <div class="calendar-container">
         <!-- Puste komórki przed dniami z danymi -->
         {% for _ in empty_days_before %}

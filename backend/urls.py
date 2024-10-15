@@ -22,5 +22,7 @@ urlpatterns = [
     path('monthly-report/', reports.monthly_report_view, name='monthly_report'),
     path('weekly-report/', reports.weekly_report_view, name='weekly_report'),
     path('daily-report/', reports.daily_report_view, name='daily_report'),
+    path('create-manual-entry/', views.create_manual_entry, name='create_manual_entry'),
+
 
 ]

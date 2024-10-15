@@ -1,5 +1,9 @@
 {
     "path-autocomplete.pathMappings": {
-       "/static": "${workspaceFolder}/frontend/static"
+      "/static": "${workspaceFolder}/frontend/static"
+    },
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true
     }
- }
+  }

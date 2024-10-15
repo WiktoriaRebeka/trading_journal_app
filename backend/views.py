@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Currency, Pair, JournalEntry
 import json
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime
 from django.db.models import Q
 from decimal import Decimal
 from .models import Pair
@@ -299,3 +299,66 @@ def calculateWin(risk_amount, target_choice):
 
 
 
+@csrf_exempt
+@login_required
+def create_manual_entry(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            print("Dane przesłane do serwera:", data)
+
+            # Lista wymaganych pól
+            required_fields = [
+                'date_added', 'currency', 'deposit', 'risk', 'risk_type', 'position', 
+                'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 
+                'target_choice', 'target_price', 'win'
+            ]
+
+            for field in required_fields:
+                if field not in data:
+                    print(f"Brakujące pole: {field}")
+                    return JsonResponse({'success': False, 'message': f'Missing field: {field}'}, status=400)
+
+            # Obliczanie wartości ryzyka i wygranej
+            deposit = Decimal(data['deposit'])
+            risk_value = Decimal(data['risk'])
+            risk_type = data['risk_type']
+            risk_amount = (risk_value / 100) * deposit if risk_type == 'percent' else risk_value
+
+            target_choice = data['target_choice']
+            win_amount = calculateWin(risk_amount, target_choice)
+
+            # Tworzenie nowego wpisu w dzienniku
+            journal_entry = JournalEntry.objects.create(
+                user=request.user,
+                currency=data['currency'],
+                deposit=deposit,
+                risk=risk_value,
+                risk_type=risk_type,
+                position=data['position'],
+                position_type=data['position_type'],
+                pair=data['pair'],
+                trade_type=data['trade_type'],
+                entry_price=data['entry'],
+                stop_loss=data['stop_loss'],
+                fee=data['fee'],
+                target_choice=target_choice,
+                target_price=data['target_price'],
+                calculated_leverage=data['calculated_leverage'],
+                calculated_position=data['calculated_position'],
+                calculated_risk_amount=risk_amount,
+                calculated_win_amount=win_amount,
+                created_at=datetime.strptime(data['date_added'], '%Y-%m-%d %H:%M:%S'),  # Ustawianie daty dodania
+                win=data['win'],
+                pnl=win_amount if data['win'] == 'YES' else -risk_amount
+            )
+            journal_entry.save()
+
+            return JsonResponse({'success': True})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Błąd dekodowania JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
