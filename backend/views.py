@@ -298,16 +298,16 @@ def calculateWin(risk_amount, target_choice):
         return None
 
 
-
 @csrf_exempt
 @login_required
 def create_manual_entry(request):
     if request.method == 'POST':
         try:
+            # Logowanie danych przychodzących
             data = json.loads(request.body)
-            print("Dane przesłane do serwera:", data)
+            print("Dane przesłane do serwera w 'create_manual_entry':", data)
 
-            # Lista wymaganych pól
+            # Sprawdzanie czy wszystkie wymagane pola są obecne
             required_fields = [
                 'date_added', 'currency', 'deposit', 'risk', 'risk_type', 'position', 
                 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 
@@ -354,11 +354,14 @@ def create_manual_entry(request):
             )
             journal_entry.save()
 
+            print(f"Wpis został pomyślnie dodany: {journal_entry}")
             return JsonResponse({'success': True})
 
         except json.JSONDecodeError:
+            print("Błąd dekodowania JSON")
             return JsonResponse({'success': False, 'message': 'Błąd dekodowania JSON'}, status=400)
         except Exception as e:
+            print(f"Błąd serwera: {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
