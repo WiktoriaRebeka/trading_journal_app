@@ -25,7 +25,11 @@
                 <option value="currency">Currency</option>
             </select>
 
-            <!-- Wybór między target price a lewarem -->
+            <!-- Dodane pole na Position -->
+            <label for="positionNE">Position Size:</label>
+            <input type="number" step="any" id="positionNE" name="positionNE" required>
+
+            <!-- Wybór między Target Price a Leverage -->
             <label for="target_or_leverageNE">Target Price or Leverage:</label>
             <label>
                 <input type="radio" name="target_or_leverageNE" value="target_price" checked> Target Price
@@ -34,13 +38,13 @@
                 <input type="radio" name="target_or_leverageNE" value="leverage"> Leverage
             </label>
 
-            <!-- Pole na target price, domyślnie widoczne -->
-            <div id="target_price-wrapperNE">
+            <!-- Pole na Target Price, domyślnie widoczne -->
+            <div id="target-price-wrapperNE">
                 <label for="target_priceNE">Exit Price:</label>
-                <input type="number" step="0.0001" id="target_priceNE" name="target_priceNE" required>
+                <input type="number" step="any" id="target_priceNE" name="target_priceNE">
             </div>
 
-            <!-- Pole na lewar, domyślnie ukryte -->
+            <!-- Pole na Leverage, domyślnie ukryte -->
             <div id="leverage-wrapperNE" style="display: none;">
                 <label for="leverageNE">Leverage:</label>
                 <input type="number" step="any" id="leverageNE" name="leverageNE">
