@@ -155,6 +155,8 @@ def journal_view(request):
         'pairs': pairs,
     })
 
+
+
 @csrf_exempt
 def add_to_journal(request):
     if request.method == 'POST':
@@ -337,6 +339,7 @@ def calculate_leverage_based_on_position(deposit, risk, position):
     leverage = position / risk_amount
     return leverage
 
+
 # Funkcja tworząca nowy wpis w dzienniku
 @csrf_exempt
 def create_manual_entry(request):
@@ -353,17 +356,36 @@ def create_manual_entry(request):
             target_price = Decimal(data.get('target_price'))
             position = Decimal(data.get('position'))
             fee = Decimal(data.get('fee', 0))
+            trade_type = data.get('trade_type')
 
             # Obliczanie leverage
             leverage = position / ((risk / 100) * deposit)
             print(f"Calculated Leverage: {leverage}")
 
-            # Obliczanie Risk Reward Ratio
-            try:
-                risk_reward_ratio = (target_price - entry) / (entry - stop_loss)
-                print(f"Calculated Risk Reward Ratio: {risk_reward_ratio}")
-            except ZeroDivisionError:
-                return JsonResponse({'success': False, 'message': 'Entry price and stop loss cannot be the same'}, status=400)
+            # Obliczanie stop loss percentage (odległość stop loss od ceny wejścia w %)
+            if trade_type == 'long':
+                stop_loss_percentage = ((entry - stop_loss) / entry) * 100
+            elif trade_type == 'short':
+                stop_loss_percentage = ((stop_loss - entry) / entry) * 100
+            else:
+                return JsonResponse({'success': False, 'message': 'Invalid trade type'}, status=400)
+
+            print(f"Stop Loss Percentage: {stop_loss_percentage}")
+
+            # Uwzględnienie opłaty (fee)
+            adjusted_stop_loss = stop_loss_percentage + (2 * fee)
+
+            # Obliczanie Risk Reward Ratio z uwzględnieniem typu transakcji i opłat
+            if trade_type == 'long':
+                profit_percentage = ((target_price - entry) / entry) * 100 - (2 * fee)
+            elif trade_type == 'short':
+                profit_percentage = ((entry - target_price) / entry) * 100 - (2 * fee)
+
+            if adjusted_stop_loss == 0:
+                return JsonResponse({'success': False, 'message': 'Adjusted stop loss cannot be zero'}, status=400)
+
+            risk_reward_ratio = profit_percentage / adjusted_stop_loss
+            print(f"Calculated Risk Reward Ratio: {risk_reward_ratio}")
 
             # Obliczanie PnL
             try:
@@ -386,13 +408,13 @@ def create_manual_entry(request):
                 position=position,
                 position_type=data.get('position_type', 'currency'),
                 pair=data.get('pair'),
-                trade_type=data.get('trade_type'),
+                trade_type=trade_type,
                 entry_price=entry,
                 stop_loss=stop_loss,
                 fee=fee,
                 target_price=target_price,
                 calculated_leverage=leverage,
-                calculated_position=calculated_position,  # Ustawienie wartości calculated_position
+                calculated_position=calculated_position,
                 pnl=pnl,
                 win=data.get('win')
             )
@@ -403,6 +425,5 @@ def create_manual_entry(request):
         except Exception as e:
             print(f"Błąd serwera: {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
-
 
 
