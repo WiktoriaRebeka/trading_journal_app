@@ -25,30 +25,9 @@
                 <option value="currency">Currency</option>
             </select>
 
-            <!-- Dodane pole na Position -->
             <label for="positionNE">Position Size:</label>
             <input type="number" step="any" id="positionNE" name="positionNE" required>
 
-            <!-- Wybór między Target Price a Leverage -->
-            <label for="target_or_leverageNE">Target Price or Leverage:</label>
-            <label>
-                <input type="radio" name="target_or_leverageNE" value="target_price" checked> Target Price
-            </label>
-            <label>
-                <input type="radio" name="target_or_leverageNE" value="leverage"> Leverage
-            </label>
-
-            <!-- Pole na Target Price, domyślnie widoczne -->
-            <div id="target-price-wrapperNE">
-                <label for="target_priceNE">Exit Price:</label>
-                <input type="number" step="any" id="target_priceNE" name="target_priceNE">
-            </div>
-
-            <!-- Pole na Leverage, domyślnie ukryte -->
-            <div id="leverage-wrapperNE" style="display: none;">
-                <label for="leverageNE">Leverage:</label>
-                <input type="number" step="any" id="leverageNE" name="leverageNE">
-            </div>
 
             <label for="pairNE">Currency Pair:</label>
             <input type="text" id="pairNE" name="pairNE" required>
@@ -64,6 +43,9 @@
 
             <label for="stop_lossNE">Stop Loss:</label>
             <input type="number" step="0.0001" id="stop_lossNE" name="stop_lossNE" required>
+
+            <label for="target_priceNE">Exit Price:</label>
+            <input type="number" step="any" id="target_priceNE" name="target_priceNE" required>
 
             <label for="winNE">Win:</label>
             <select id="winNE" name="winNE">

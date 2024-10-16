@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -13,10 +12,12 @@ from decimal import Decimal
 from .models import Pair
 
 def dashboard_view(request):
+    print("Funkcja dashboard_view została wywołana")
 
     username = request.user.username
     
     if request.method == 'POST':
+        print("Formularz został wysłany metodą POST")
         
         # Zbierz dane z formularza
         currency = request.POST.get('currency')
@@ -30,6 +31,8 @@ def dashboard_view(request):
         stop_loss = request.POST.get('stop_loss')
         fee = request.POST.get('fee', 0)
 
+        print(f"Data from form: currency={currency}, deposit={deposit}, risk={risk}, pair={pair_name}, entry={entry}")
+
         try:
             deposit = float(deposit)
             risk = float(risk)
@@ -38,6 +41,7 @@ def dashboard_view(request):
             stop_loss = float(stop_loss)
             fee = float(fee)
         except ValueError:
+            print("Błąd konwersji danych z formularza")
             return render(request, 'app_main/dashboard.html', {
                 'error': 'Błędne dane w formularzu',
                 'currencies': Currency.objects.all(),
@@ -71,6 +75,7 @@ def dashboard_view(request):
             'fee': fee,
         }
 
+        print("Wyniki obliczeń:", results)
 
     currencies = Currency.objects.all()
     pairs = Pair.objects.all()
@@ -89,6 +94,7 @@ def save_currency(request):
             data = json.loads(request.body.decode('utf-8'))
             currency = data.get('currency')
 
+            print(f"Wybrana waluta: {currency}")
             return JsonResponse({'status': 'success', 'currency': currency})
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Błąd dekodowania JSON'}, status=400)
@@ -157,7 +163,7 @@ def add_to_journal(request):
             print("Dane przesłane do serwera:", data)
 
             # Lista wymaganych pól
-            required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage']
+            required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
 
             for field in required_fields:
                 if field not in data:
@@ -199,6 +205,7 @@ def add_to_journal(request):
                 target_choice=target_choice,
                 target_price=data['target_price'],  
                 calculated_leverage=data['calculated_leverage'],
+                calculated_position=data['calculated_position'],
                 calculated_risk_amount=risk_amount,  # Przypisujemy wartość obliczoną w walucie
                 calculated_win_amount=win_amount,    # Przypisujemy wartość wygranej w walucie
                 pnl=None,  # PnL początkowo ustawione na None
@@ -292,53 +299,27 @@ def calculateWin(risk_amount, target_choice):
 
 
 
-
-# Funkcja obliczająca PnL
-def calculateWinNewEntry(risk_amount, target_choice):
-    try:
-        # Upewniamy się, że target_choice jest liczbowy
-        if isinstance(target_choice, (int, float)):
-            target_multiplier = float(target_choice)
-        else:
-            target_multiplier = float(str(target_choice).replace("R", ""))  # Usuwamy "R"
-        
-        # Obliczamy PnL jako ryzyko pomnożone przez mnożnik
-        pnl_value = risk_amount * Decimal(target_multiplier)
-        return pnl_value
-    except ValueError:
-        return None
-
 # Funkcja ładująca modal
 def load_add_entry_modal(request):
     return render(request, 'app_main/add_entry_modal.html')
 
-def calculate_target_price(deposit, risk, entry, stop_loss, leverage):
+
+# Funkcja obliczająca PnL
+def calculateWinNewEntry(risk_amount, risk_reward_ratio):
     """
-    Oblicza cenę docelową (Target Price) na podstawie wybranego lewara.
+    Oblicza PnL (zysk lub strata) na podstawie wartości ryzyka i współczynnika Risk Reward.
     """
-    # Obliczamy wartość ryzyka
-    risk_amount = (risk / 100) * deposit
-
-    # Obliczamy procentowy stop loss
-    stop_loss_percentage = ((entry - stop_loss) / entry) * 100
-
-    if stop_loss_percentage == 0:
-        raise ValueError("Stop Loss percentage cannot be zero")
-
-    # Obliczanie ceny docelowej
-    target_percentage = leverage * stop_loss_percentage
-    target_price = entry + (entry * target_percentage / 100)
-
-    return target_price
-
-def calculate_position_based_on_leverage(deposit, risk, leverage):
-    """
-    Oblicza wielkość pozycji na podstawie lewara.
-    """
-    if leverage == 0:
-        raise ValueError("Leverage cannot be zero")
-    position = (risk / 100) * deposit * leverage
-    return position
+    try:
+        # Upewniamy się, że risk_reward_ratio jest liczbą
+        if not isinstance(risk_reward_ratio, (int, float, Decimal)):
+            raise ValueError("Risk Reward Ratio must be a number")
+        
+        # Obliczamy PnL jako ryzyko pomnożone przez współczynnik Risk Reward
+        pnl_value = risk_amount * Decimal(risk_reward_ratio)
+        return pnl_value
+    except (ValueError, TypeError) as e:
+        print(f"Error calculating PnL: {e}")
+        return None
 
 def calculate_leverage_based_on_position(deposit, risk, position):
     """
@@ -346,10 +327,16 @@ def calculate_leverage_based_on_position(deposit, risk, position):
     """
     if position == 0:
         raise ValueError("Position cannot be zero")
-    leverage = position / ((risk / 100) * deposit)
+    
+    # Obliczamy wartość ryzyka
+    risk_amount = (risk / 100) * deposit
+    if risk_amount == 0:
+        raise ValueError("Risk amount cannot be zero")
+    
+    # Obliczamy leverage na podstawie pozycji
+    leverage = position / risk_amount
     return leverage
 
-# Funkcja tworząca nowy wpis w dzienniku
 # Funkcja tworząca nowy wpis w dzienniku
 @csrf_exempt
 def create_manual_entry(request):
@@ -359,61 +346,21 @@ def create_manual_entry(request):
             print("Otrzymane dane z formularza:", data)
 
             # Pobieranie danych z formularza
-            deposit = data.get('deposit')
-            if deposit is None or deposit == '':
-                return JsonResponse({'success': False, 'message': 'Deposit is missing'}, status=400)
-            deposit = Decimal(deposit)
-
-            risk = data.get('risk')
-            if risk is None or risk == '':
-                return JsonResponse({'success': False, 'message': 'Risk is missing'}, status=400)
-            risk = Decimal(risk)
-
-            stop_loss = data.get('stop_loss')
-            if stop_loss is None or stop_loss == '':
-                return JsonResponse({'success': False, 'message': 'Stop Loss is missing'}, status=400)
-            stop_loss = Decimal(stop_loss)
-
-            entry = data.get('entry')
-            if entry is None or entry == '':
-                return JsonResponse({'success': False, 'message': 'Entry is missing'}, status=400)
-            entry = Decimal(entry)
-
-            # Pobieranie opcjonalnych pól
+            deposit = Decimal(data.get('deposit'))
+            risk = Decimal(data.get('risk'))
+            stop_loss = Decimal(data.get('stop_loss'))
+            entry = Decimal(data.get('entry'))
+            target_price = Decimal(data.get('target_price'))
+            position = Decimal(data.get('position'))
             fee = Decimal(data.get('fee', 0))
-            target_price = data.get('target_price')
-            leverage = data.get('calculated_leverage')
-            position = data.get('position')
 
-            # Konwersja na Decimal, jeśli są wartości
-            if target_price is not None and target_price != '':
-                target_price = Decimal(target_price)
-            else:
-                target_price = None
-
-            if leverage is not None and leverage != '':
-                leverage = Decimal(leverage)
-            else:
-                leverage = None
-
-            if position is not None and position != '':
-                position = Decimal(position)
-            else:
-                return JsonResponse({'success': False, 'message': 'Position must be provided'}, status=400)
-
-            # Ustalenie brakujących wartości dla target_price i leverage
-            if target_price is not None and leverage is None:
-                # Jeśli użytkownik podał target price, ale nie podał lewara, obliczamy leverage
-                leverage = calculate_leverage_based_on_position(deposit, risk, position)
-                print(f"Calculated Leverage based on position: {leverage}")
-            elif leverage is not None and target_price is None:
-                # Jeśli użytkownik podał lewar, ale nie podał target price, obliczamy target price
-                target_price = calculate_target_price(deposit, risk, entry, stop_loss, leverage)
-                print(f"Calculated Target Price based on leverage: {target_price}")
+            # Obliczanie leverage
+            leverage = position / ((risk / 100) * deposit)
+            print(f"Calculated Leverage: {leverage}")
 
             # Obliczanie Risk Reward Ratio
             try:
-                risk_reward_ratio = (target_price - entry) / (entry - stop_loss) if target_price is not None else None
+                risk_reward_ratio = (target_price - entry) / (entry - stop_loss)
                 print(f"Calculated Risk Reward Ratio: {risk_reward_ratio}")
             except ZeroDivisionError:
                 return JsonResponse({'success': False, 'message': 'Entry price and stop loss cannot be the same'}, status=400)
@@ -426,24 +373,8 @@ def create_manual_entry(request):
                 print(f"Error calculating PnL: {e}")
                 return JsonResponse({'success': False, 'message': f'Error calculating PnL: {str(e)}'}, status=500)
 
-            # Logowanie danych przed zapisem do bazy
-            print("Dane do zapisu w bazie danych:")
-            print(f"User: {request.user}")
-            print(f"Currency: {data.get('currency')}")
-            print(f"Deposit: {deposit}")
-            print(f"Risk: {risk}")
-            print(f"Risk Type: {data.get('risk_type', 'percent')}")
-            print(f"Position: {position}")
-            print(f"Position Type: {data.get('position_type', 'currency')}")
-            print(f"Pair: {data.get('pair')}")
-            print(f"Trade Type: {data.get('trade_type', 'long')}")
-            print(f"Entry Price: {entry}")
-            print(f"Stop Loss: {stop_loss}")
-            print(f"Fee: {fee}")
-            print(f"Target Price: {target_price}")
-            print(f"Calculated Leverage: {leverage}")
-            print(f"PnL: {pnl}")
-            print(f"Win: {data.get('win')}")
+            # Ustawienie wartości dla calculated_position jako position
+            calculated_position = position
 
             # Zapis do bazy danych
             journal_entry = JournalEntry.objects.create(
@@ -455,12 +386,13 @@ def create_manual_entry(request):
                 position=position,
                 position_type=data.get('position_type', 'currency'),
                 pair=data.get('pair'),
-                trade_type=data.get('trade_type', 'long'),
+                trade_type=data.get('trade_type'),
                 entry_price=entry,
                 stop_loss=stop_loss,
                 fee=fee,
                 target_price=target_price,
                 calculated_leverage=leverage,
+                calculated_position=calculated_position,  # Ustawienie wartości calculated_position
                 pnl=pnl,
                 win=data.get('win')
             )
@@ -471,4 +403,6 @@ def create_manual_entry(request):
         except Exception as e:
             print(f"Błąd serwera: {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
 
