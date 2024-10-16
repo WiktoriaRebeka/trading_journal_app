@@ -374,17 +374,21 @@ def create_manual_entry(request):
 
             # Uwzględnienie opłaty (fee)
             adjusted_stop_loss = stop_loss_percentage + (2 * fee)
+            print(f"Adjusted Stop Loss (including fee): {adjusted_stop_loss}")
 
             # Obliczanie Risk Reward Ratio z uwzględnieniem typu transakcji i opłat
             if trade_type == 'long':
                 profit_percentage = ((target_price - entry) / entry) * 100 - (2 * fee)
+                print(f"Long Trade: Profit Percentage (adjusted for fee): {profit_percentage}")
             elif trade_type == 'short':
                 profit_percentage = ((entry - target_price) / entry) * 100 - (2 * fee)
+                print(f"Short Trade: Profit Percentage (adjusted for fee): {profit_percentage}")
 
             if adjusted_stop_loss == 0:
                 return JsonResponse({'success': False, 'message': 'Adjusted stop loss cannot be zero'}, status=400)
 
-            risk_reward_ratio = profit_percentage / adjusted_stop_loss
+            # Obliczanie i zaokrąglenie Risk Reward Ratio do 2 miejsc po przecinku
+            risk_reward_ratio = round(profit_percentage / adjusted_stop_loss, 2)
             print(f"Calculated Risk Reward Ratio: {risk_reward_ratio}")
 
             # Obliczanie PnL
@@ -425,5 +429,4 @@ def create_manual_entry(request):
         except Exception as e:
             print(f"Błąd serwera: {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
-
 
