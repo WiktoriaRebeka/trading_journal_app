@@ -39,6 +39,7 @@ class JournalEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     win = models.CharField(max_length=3, choices=[('YES', 'YES'), ('NO', 'NO')], null=True, blank=True)
     pnl = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Nowe pole PnL
+    date_added = models.DateTimeField(null=True, blank=True)  # Nowe pole na datę dodania wpisu
 
 
     def __str__(self):

@@ -16,14 +16,6 @@
             <label for="feeNE">Exchange Fee (%):</label>
             <input type="number" step="0.0001" id="feeNE" name="feeNE" required>
 
-            <label for="riskNE">Risk:</label>
-            <input type="number" step="any" id="riskNE" name="riskNE" required>
-
-            <label for="risk_typeNE">Risk Unit:</label>
-            <select id="risk_typeNE" name="risk_typeNE">
-                <option value="percent">%</option>
-                <option value="currency">Currency</option>
-            </select>
 
             <label for="positionNE">Position Size:</label>
             <input type="number" step="any" id="positionNE" name="positionNE" required>
@@ -52,6 +44,10 @@
                 <option value="YES">YES</option>
                 <option value="NO">NO</option>
             </select>
+
+            <label for="pnlNE">PnL:</label>
+            <input type="number" step="any" id="pnlNE" name="pnlNE" required>
+
 
             <button type="button" id="save-entry-buttonNE">Add</button>
             <button type="button" id="cancel-entry-buttonNE">Cancel</button>
