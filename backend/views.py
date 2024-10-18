@@ -7,6 +7,7 @@ from .models import Currency, Pair, JournalEntry
 import json
 from django.utils import timezone
 from datetime import timedelta
+from datetime import datetime
 from django.db.models import Q
 from decimal import Decimal
 from .models import Pair
@@ -338,11 +339,11 @@ def create_manual_entry(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            print("Otrzymane dane z formularza:", data)
+            print("Otrzymane dane z formularza (create_manual_entry):", data)
 
             # Pobieranie danych z formularza
             deposit = Decimal(data.get('deposit'))
-            pnl = Decimal(data.get('pnl'))  # Nowe pole PnL
+            pnl = Decimal(data.get('pnl'))
             stop_loss = Decimal(data.get('stop_loss'))
             entry = Decimal(data.get('entry'))
             target_price = Decimal(data.get('target_price'))
@@ -350,7 +351,7 @@ def create_manual_entry(request):
             fee = Decimal(data.get('fee', 0))
             trade_type = data.get('trade_type')
 
-            # Obliczanie stop loss percentage (odległość stop loss od ceny wejścia w %)
+            # Obliczenia związane z ryzykiem i lewarem
             if trade_type == 'long':
                 stop_loss_percentage = ((entry - stop_loss) / entry) * 100
             elif trade_type == 'short':
@@ -358,48 +359,33 @@ def create_manual_entry(request):
             else:
                 return JsonResponse({'success': False, 'message': 'Invalid trade type'}, status=400)
 
-            print(f"Stop Loss Percentage: {stop_loss_percentage}")
-
-            # Uwzględnienie opłaty (fee)
             adjusted_stop_loss = stop_loss_percentage + (2 * fee)
+            print(f"Stop Loss Percentage: {stop_loss_percentage}")
             print(f"Adjusted Stop Loss (including fee): {adjusted_stop_loss}")
 
-            # Obliczanie Risk Reward Ratio z uwzględnieniem typu transakcji i opłat
             if trade_type == 'long':
                 profit_percentage = ((target_price - entry) / entry) * 100 - (2 * fee)
-                print(f"Long Trade: Profit Percentage (adjusted for fee): {profit_percentage}")
             elif trade_type == 'short':
                 profit_percentage = ((entry - target_price) / entry) * 100 - (2 * fee)
-                print(f"Short Trade: Profit Percentage (adjusted for fee): {profit_percentage}")
+
+            print(f"Profit Percentage (adjusted for fee): {profit_percentage}")
 
             if adjusted_stop_loss == 0:
                 return JsonResponse({'success': False, 'message': 'Adjusted stop loss cannot be zero'}, status=400)
 
-            # Obliczanie i zaokrąglenie Risk Reward Ratio do 2 miejsc po przecinku
             risk_reward_ratio = round(profit_percentage / adjusted_stop_loss, 2)
             print(f"Calculated Risk Reward Ratio: {risk_reward_ratio}")
 
-            # Obliczanie ryzyka na podstawie PnL i RRR
             risk = pnl / Decimal(risk_reward_ratio)
             print(f"Calculated Risk: {risk}")
 
-            # Obliczenie ryzyka jako procentu depozytu
             risk_percentage = (risk / deposit) * 100
-            print(f"Calculated Risk as Percentage of Deposit: {risk_percentage}")
-
-            # Ustawienie wartości PnL
             pnl = pnl if data.get('win') == 'YES' else -pnl
-            print(f"Calculated PnL: {pnl}")
 
-            # Obliczanie ryzyka w walucie
-            risk_value_in_currency = (risk_percentage / 100) * deposit
-            print(f"Risk value in currency: {risk_value_in_currency}")
-            
-            # Obliczanie lewara
             leverage = round(((risk_percentage / 100) * deposit) / (adjusted_stop_loss / 100) / position, 0)
             print(f"Calculated Leverage: {leverage}")
 
-            # Zwracanie obliczonych wartości bez zapisu do bazy danych
+            # Zwracanie wszystkich obliczonych wartości do frontend
             return JsonResponse({
                 'success': True,
                 'calculated_values': {
@@ -412,100 +398,61 @@ def create_manual_entry(request):
             })
 
         except Exception as e:
-            print(f"Błąd serwera: {e}")
+            print(f"Błąd serwera (create_manual_entry): {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
     else:
         return JsonResponse({'success': False, 'message': 'Niewłaściwa metoda HTTP'}, status=400)
-
 @csrf_exempt
 def add_to_journal_with_full_data(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            print("Otrzymane dane z formularza:", data)
+            print("Otrzymane dane z formularza (add_to_journal_with_full_data):", data)
 
-            # Pobieranie danych z formularza i logowanie każdej wartości
-            date_added = data.get('date_added')
+            # Pobieranie danych z formularza
+            date_added = data.get('date_added')  # Pobranie daty wybranej przez użytkownika
             if date_added:
                 try:
-                    # Parsowanie daty na format datetime bez konwersji na świadomą strefę czasową
-                    date_added = timezone.datetime.fromisoformat(date_added)  # Data, jaką wybrał użytkownik
+                    date_added = timezone.make_aware(timezone.datetime.fromisoformat(date_added))
                     print(f"Date Added from input: {date_added}")
                 except ValueError:
                     print("Błąd parsowania daty, używam bieżącej daty")
-                    date_added = timezone.now()
+                    date_added = timezone.now()  # W przypadku błędu używamy bieżącej daty
             else:
-                print("Brak daty w danych wejściowych, używam bieżącej daty")
-                date_added = timezone.now()
+                date_added = timezone.now()  # Jeśli nie ma daty, używamy bieżącej daty
 
-            # Pobieranie pozostałych danych i logowanie
+            # Pobieranie pozostałych danych
             currency = data.get('currency')
-            deposit = data.get('deposit')
-            pnl = data.get('pnl')
-            stop_loss = data.get('stop_loss')
-            entry = data.get('entry')
-            target_price = data.get('target_price')
-            position = data.get('position')
-            fee = data.get('fee', 0)
+            deposit = Decimal(data.get('deposit'))
+            pnl = Decimal(data.get('pnl'))
+            stop_loss = Decimal(data.get('stop_loss'))
+            entry = Decimal(data.get('entry'))
+            target_price = Decimal(data.get('target_price'))
+            position = Decimal(data.get('position'))
+            fee = Decimal(data.get('fee', 0))
             trade_type = data.get('trade_type')
             win = data.get('win')
             pair = data.get('pair')
-            risk_reward_ratio = data.get('risk_reward_ratio')
+            risk_reward_ratio = Decimal(data.get('risk_reward_ratio'))
+            calculated_leverage = Decimal(data.get('calculated_leverage'))
 
-            # Sprawdzanie, czy wszystkie wymagane dane są dostępne
-            required_fields = {
-                'currency': currency,
-                'deposit': deposit,
-                'pnl': pnl,
-                'stop_loss': stop_loss,
-                'entry': entry,
-                'target_price': target_price,
-                'position': position,
-                'fee': fee,
-                'trade_type': trade_type,
-                'win': win,
-                'pair': pair,
-                'risk_reward_ratio': risk_reward_ratio
-            }
+            # Zaokrąglamy risk_reward_ratio do 2 miejsc po przecinku i konwertujemy na string
+            risk_reward_ratio = str(round(risk_reward_ratio, 2))
 
-            for field_name, value in required_fields.items():
-                if value is None:
-                    print(f"Błąd: Pole {field_name} jest puste lub None.")
-                    return JsonResponse({'success': False, 'message': f'Pole {field_name} nie może być puste.'}, status=400)
-
-            # Konwersja do Decimal
-            deposit = Decimal(deposit)
-            pnl = Decimal(pnl)
-            stop_loss = Decimal(stop_loss)
-            entry = Decimal(entry)
-            target_price = Decimal(target_price)
-            position = Decimal(position)
-            fee = Decimal(fee)
-            risk_reward_ratio = Decimal(risk_reward_ratio)
-
-            # Zaokrąglenie risk_reward_ratio do dwóch miejsc po przecinku
-            risk_reward_ratio = round(risk_reward_ratio, 2)
-
+            # Wyświetlenie danych, które będą zapisane do bazy
             print(f"Currency: {currency}, Deposit: {deposit}, PnL: {pnl}, Pair: {pair}")
             print(f"Trade Type: {trade_type}, Win: {win}, Fee: {fee}, Position: {position}")
             print(f"Entry Price: {entry}, Stop Loss: {stop_loss}, Target Price: {target_price}")
-            print(f"Risk Reward Ratio: {risk_reward_ratio}")
-
-            # Obliczanie ryzyka
-            calculated_risk = pnl / risk_reward_ratio
-            print(f"Calculated Risk: {calculated_risk}")
-
-            # Obliczanie lewara
-            calculated_leverage = round(((calculated_risk / deposit) * 100) / (stop_loss / 100), 0)
+            print(f"Risk Reward Ratio (zaokrąglone): {risk_reward_ratio}")
             print(f"Calculated Leverage: {calculated_leverage}")
 
-            # Tworzenie nowego wpisu w dzienniku
+            # Tworzenie wpisu w dzienniku
             journal_entry = JournalEntry.objects.create(
                 user=request.user,
-                date_added=date_added,  # Data z formularza użytkownika
+                date_added=date_added,  # Ustawiamy datę wybraną przez użytkownika
                 currency=currency,
                 deposit=deposit,
-                risk=calculated_risk,
+                risk=pnl / Decimal(risk_reward_ratio),  # Obliczane tylko raz na podstawie przekazanego RRR
                 risk_type='currency',
                 position=position,
                 position_type='currency',
@@ -515,20 +462,19 @@ def add_to_journal_with_full_data(request):
                 stop_loss=stop_loss,
                 fee=fee,
                 target_price=target_price,
-                calculated_leverage=calculated_leverage,
+                calculated_leverage=calculated_leverage,  # Bez ponownego obliczania lewara
                 calculated_position=position,
                 pnl=pnl,
                 win=win,
-                target_choice=str(risk_reward_ratio)  # Zapisywanie zaokrąglonego risk_reward_ratio jako string
+                target_choice=risk_reward_ratio  # Zaokrąglona wartość jako string
             )
 
             journal_entry.save()
             print(f"Wpis został dodany pomyślnie do bazy danych z ID {journal_entry.id}.")
-
             return JsonResponse({'success': True})
 
         except Exception as e:
-            print(f"Błąd serwera: {e}")
+            print(f"Błąd serwera (add_to_journal_with_full_data): {e}")
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Niewłaściwa metoda HTTP'}, status=400)
