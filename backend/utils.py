@@ -34,7 +34,8 @@ def get_report_for_period(journal_entries, days=None):
     now = timezone.now()
     if days:
         start_date = now - timedelta(days=days)
-        journal_entries = journal_entries.filter(created_at__gte=start_date)
+        # Używamy pola 'entry_date' zamiast 'created_at'
+        journal_entries = journal_entries.filter(entry_date__gte=start_date)
     
     # Obliczanie raportu na podstawie przefiltrowanych danych
     return calculate_report_data(journal_entries)

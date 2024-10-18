@@ -25,6 +25,5 @@ urlpatterns = [
     path('load-add-entry-modal/', views.load_add_entry_modal, name='load_add_entry_modal'),
     path('create-manual-entry/', views.create_manual_entry, name='create_manual_entry'),
     path('add-to-journal-with-full-data/', views.add_to_journal_with_full_data, name='add_to_journal_with_full_data'),
-
-
+    path('update-entry-dates/<int:entry_id>/', views.update_entry_dates, name='update_entry_dates'),
 ]

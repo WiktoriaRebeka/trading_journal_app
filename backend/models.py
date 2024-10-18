@@ -36,10 +36,11 @@ class JournalEntry(models.Model):
     calculated_position = models.DecimalField(max_digits=10, decimal_places=2)
     calculated_risk_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Nowe pole na obliczoną wartość ryzyka
     calculated_win_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) 
-    created_at = models.DateTimeField(auto_now_add=True)
     win = models.CharField(max_length=3, choices=[('YES', 'YES'), ('NO', 'NO')], null=True, blank=True)
     pnl = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Nowe pole PnL
     date_added = models.DateTimeField(null=True, blank=True)  # Nowe pole na datę dodania wpisu
+    entry_date = models.DateTimeField(null=True, blank=True)  # Data wejścia
+    exit_date = models.DateTimeField(null=True, blank=True)  # Data wyjścia
 
 
     def __str__(self):

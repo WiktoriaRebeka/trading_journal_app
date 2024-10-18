@@ -40,8 +40,8 @@ def reports_view(request):
 
     # Filtrowanie dziennych transakcji dla wybranego miesiąca
     daily_pnl_data = journal_entries.filter(
-        created_at__date__gte=first_day_of_month, created_at__date__lte=last_day_of_month
-    ).values('created_at__date').annotate(
+        entry_date__date__gte=first_day_of_month, entry_date__date__lte=last_day_of_month
+    ).values('entry_date__date').annotate(
         daily_pnl=Sum('pnl'),
         total_trades=Count('id'),
         win_trades=Sum(Case(When(win='YES', then=1), output_field=IntegerField()))
@@ -51,7 +51,7 @@ def reports_view(request):
     daily_data = []
     for day in range(1, days_in_month + 1):
         current_date = date(year, month, day)
-        day_entry = next((entry for entry in daily_pnl_data if entry['created_at__date'] == current_date), None)
+        day_entry = next((entry for entry in daily_pnl_data if entry['entry_date__date'] == current_date), None)
 
         if day_entry:
             pnl = day_entry['daily_pnl']
@@ -92,7 +92,7 @@ def reports_view(request):
     pie_chart_total_html = pie_fig_total.to_html(full_html=False)
 
     # Przygotowanie danych dla wykresu słupkowego (PnL)
-    dates = [entry['created_at__date'].strftime('%Y-%m-%d') for entry in daily_pnl_data]
+    dates = [entry['entry_date__date'].strftime('%Y-%m-%d') for entry in daily_pnl_data]
     pnl_values = [entry['daily_pnl'] for entry in daily_pnl_data]
 
     # Tworzenie wykresu słupkowego dla PnL
@@ -130,8 +130,8 @@ def calendar_partial_view(request, year, month):
     journal_entries = JournalEntry.objects.filter(
         user=request.user, 
         win__in=['YES', 'NO'],
-        created_at__year=year, 
-        created_at__month=month
+        entry_date__year=year, 
+        entry_date__month=month
     )
 
     # Zmienna aktualnego dnia, roku, miesiąca
@@ -142,7 +142,7 @@ def calendar_partial_view(request, year, month):
     for day in range(1, days_in_month + 1):
         current_date = date(today.year, today.month, day)
         day_entry = next(
-            (entry for entry in journal_entries if entry.created_at.date() == current_date), 
+            (entry for entry in journal_entries if entry.entry_date.date() == current_date), 
             None
         )
 

@@ -124,7 +124,8 @@ def save_pair(request):
 @login_required
 def journal_view(request):
     # Pobieramy wszystkie wpisy użytkownika posortowane według daty stworzenia
-    journal_entries = JournalEntry.objects.filter(user=request.user).order_by('-created_at')
+    journal_entries = JournalEntry.objects.filter(user=request.user).order_by('-entry_date')
+
 
     # Pobieramy dostępne pary do filtrowania
     pairs = Pair.objects.all()
@@ -151,7 +152,6 @@ def journal_view(request):
         'pairs': pairs,
     })
 
-
 @csrf_exempt
 def add_to_journal(request):
     if request.method == 'POST':
@@ -160,12 +160,36 @@ def add_to_journal(request):
             print("Dane przesłane do serwera:", data)
 
             # Lista wymaganych pól
+# Lista wymaganych pól bez entry_date i exit_date, bo będą one opcjonalne
             required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
 
             for field in required_fields:
                 if field not in data:
                     print(f"Brakujące pole: {field}")
                     return JsonResponse({'success': False, 'message': f'Missing field: {field}'}, status=400)
+
+            # Pobieramy entry_date i exit_date z danych użytkownika
+            entry_date = data.get('entry_date')
+            exit_date = data.get('exit_date')
+
+            # Konwersja entry_date i exit_date na format datetime
+            if entry_date:
+                try:
+                    entry_date = timezone.make_aware(timezone.datetime.fromisoformat(entry_date))
+                    print(f"Entry Date from input: {entry_date}")
+                except ValueError:
+                    print("Błąd parsowania daty wejścia, używam bieżącej daty")
+                    entry_date = timezone.now()  # W przypadku błędu ustawiamy bieżącą datę
+
+            if exit_date:
+                try:
+                    exit_date = timezone.make_aware(timezone.datetime.fromisoformat(exit_date))
+                    print(f"Exit Date from input: {exit_date}")
+                except ValueError:
+                    print("Błąd parsowania daty wyjścia, ustawiono na None")
+                    exit_date = None
+            else:
+                exit_date = None  # Jeśli nie ma daty wyjścia, zostawiamy ją jako None
 
             # Obliczamy wartość ryzyka i wygranej w walucie
             deposit = Decimal(data['deposit'])
@@ -206,7 +230,9 @@ def add_to_journal(request):
                 calculated_risk_amount=risk_amount,  # Przypisujemy wartość obliczoną w walucie
                 calculated_win_amount=win_amount,    # Przypisujemy wartość wygranej w walucie
                 pnl=None,  # PnL początkowo ustawione na None
-                win=None  # Ustawienie pola 'win' na NULL przy tworzeniu nowego wpisu
+                win=None,  # Ustawienie pola 'win' na NULL przy tworzeniu nowego wpisu
+                entry_date=entry_date,  # Ustawiamy datę wejścia
+                exit_date=exit_date  # Ustawiamy datę wyjścia
             )
             journal_entry.save()
             print("Wpis został pomyślnie dodany")
@@ -410,16 +436,29 @@ def add_to_journal_with_full_data(request):
             print("Otrzymane dane z formularza (add_to_journal_with_full_data):", data)
 
             # Pobieranie danych z formularza
-            date_added = data.get('date_added')  # Pobranie daty wybranej przez użytkownika
-            if date_added:
+            entry_date = data.get('entry_date')  # Pobranie daty wejścia wybranej przez użytkownika
+            exit_date = data.get('exit_date')    # Pobranie daty wyjścia wybranej przez użytkownika
+
+            # Konwersja dat wejścia i wyjścia na format datetime
+            if entry_date:
                 try:
-                    date_added = timezone.make_aware(timezone.datetime.fromisoformat(date_added))
-                    print(f"Date Added from input: {date_added}")
+                    entry_date = timezone.make_aware(timezone.datetime.fromisoformat(entry_date))
+                    print(f"Entry Date from input: {entry_date}")
                 except ValueError:
-                    print("Błąd parsowania daty, używam bieżącej daty")
-                    date_added = timezone.now()  # W przypadku błędu używamy bieżącej daty
+                    print("Błąd parsowania daty wejścia, używam bieżącej daty")
+                    entry_date = timezone.now()  # W przypadku błędu używamy bieżącej daty
             else:
-                date_added = timezone.now()  # Jeśli nie ma daty, używamy bieżącej daty
+                entry_date = timezone.now()  # Jeśli nie ma daty wejścia, używamy bieżącej daty
+
+            if exit_date:
+                try:
+                    exit_date = timezone.make_aware(timezone.datetime.fromisoformat(exit_date))
+                    print(f"Exit Date from input: {exit_date}")
+                except ValueError:
+                    print("Błąd parsowania daty wyjścia, ustawiono na None")
+                    exit_date = None  # Jeśli jest błąd, nie ustawiamy żadnej daty wyjścia
+            else:
+                exit_date = None  # Jeśli nie podano daty wyjścia, zostawiamy jako None
 
             # Pobieranie pozostałych danych
             currency = data.get('currency')
@@ -445,11 +484,13 @@ def add_to_journal_with_full_data(request):
             print(f"Entry Price: {entry}, Stop Loss: {stop_loss}, Target Price: {target_price}")
             print(f"Risk Reward Ratio (zaokrąglone): {risk_reward_ratio}")
             print(f"Calculated Leverage: {calculated_leverage}")
+            print(f"Entry Date: {entry_date}, Exit Date: {exit_date}")
 
             # Tworzenie wpisu w dzienniku
             journal_entry = JournalEntry.objects.create(
                 user=request.user,
-                date_added=date_added,  # Ustawiamy datę wybraną przez użytkownika
+                entry_date=entry_date,  # Ustawiamy datę wejścia
+                exit_date=exit_date,    # Ustawiamy datę wyjścia
                 currency=currency,
                 deposit=deposit,
                 risk=pnl / Decimal(risk_reward_ratio),  # Obliczane tylko raz na podstawie przekazanego RRR
@@ -478,3 +519,36 @@ def add_to_journal_with_full_data(request):
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Niewłaściwa metoda HTTP'}, status=400)
+
+@csrf_exempt
+def update_entry_dates(request, entry_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            entry_date = data.get('entry_date')
+            exit_date = data.get('exit_date')
+
+            # Pobierz wpis na podstawie ID
+            journal_entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
+
+            # Aktualizowanie daty wejścia
+            if entry_date:
+                try:
+                    journal_entry.entry_date = timezone.make_aware(timezone.datetime.fromisoformat(entry_date))
+                except ValueError:
+                    return JsonResponse({'success': False, 'message': 'Błąd parsowania daty wejścia'}, status=400)
+
+            # Aktualizowanie daty wyjścia
+            if exit_date:
+                try:
+                    journal_entry.exit_date = timezone.make_aware(timezone.datetime.fromisoformat(exit_date))
+                except ValueError:
+                    return JsonResponse({'success': False, 'message': 'Błąd parsowania daty wyjścia'}, status=400)
+
+            journal_entry.save()
+            return JsonResponse({'success': True})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)

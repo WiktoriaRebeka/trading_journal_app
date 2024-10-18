@@ -50,7 +50,8 @@
 <table>
     <thead>
         <tr>
-            <th>Date Added</th>
+            <th>Entry Date</th>
+            <th>Exit Date</th>
             <th>Currency</th>
             <th>Deposit</th>
             <th>Risk [%]</th>
@@ -70,7 +71,16 @@
     <tbody>
         {% for entry in journal_entries %}
         <tr id="entry-row-{{ entry.id }}">
-            <td>{{ entry.created_at }}</td>
+            <td>
+                <input type="datetime-local" class="entry-date-input" 
+                       value="{{ entry.entry_date|date:'Y-m-d\TH:i:s' }}" 
+                       data-entry-id="{{ entry.id }}" />
+            </td>
+            <td>
+                <input type="datetime-local" class="exit-date-input" 
+                       value="{{ entry.exit_date|date:'Y-m-d\TH:i:s' }}" 
+                       data-entry-id="{{ entry.id }}" />
+            </td>
             <td>{{ entry.currency }}</td>
             <td>{{ entry.deposit|floatformat:2 }}</td>
             <td>{{ entry.risk|floatformat:2 }}</td>
