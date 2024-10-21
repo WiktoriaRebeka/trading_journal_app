@@ -113,11 +113,18 @@ def reports_view(request):
     # Tworzenie wykresu słupkowego dla PnL
     bar_fig_pnl = go.Figure(data=[go.Bar(x=dates, y=pnl_values, 
                                          marker_color=['green' if x >= 0 else 'red' for x in pnl_values])])
+   # Aktualizacja wyglądu wykresu z etykietami dla dat
     bar_fig_pnl.update_layout(
-        title="Daily PnL for the Selected Month",
-        xaxis_title="Date",
-        yaxis_title="PnL",
-        yaxis=dict(zeroline=True, zerolinecolor='black'),
+    title="Daily PnL for the Selected Month",
+    xaxis_title="Date",
+    yaxis_title="PnL",
+    xaxis=dict(
+        tickmode='array',  # Wyświetla każdą datę jako tick
+        tickvals=dates,    # Używa dat jako wartości ticków
+        ticktext=dates,    # Wyświetla daty jako etykiety
+        tickangle=45       # Opcjonalnie: obraca etykiety o 45 stopni dla lepszej czytelności
+    ),
+    yaxis=dict(zeroline=True, zerolinecolor='black'),
     )
     bar_chart_pnl_html = bar_fig_pnl.to_html(full_html=False)
 

@@ -13,7 +13,9 @@ from decimal import Decimal
 from .models import Pair
 from django.db.models import Case, When, IntegerField
 
+import logging
 
+logger = logging.getLogger(__name__)  # Używamy loggera Django
 def dashboard_view(request):
     print("Funkcja dashboard_view została wywołana")
 
@@ -334,7 +336,19 @@ def calculateWin(risk_amount, target_choice):
 
 # Funkcja ładująca modal
 def load_add_entry_modal(request):
-    return render(request, 'app_main/add_entry_modal.html')
+    pairs = Pair.objects.all()  # Pobieranie wszystkich par
+    
+    # Dodanie logów, aby sprawdzić, jakie pary zostały pobrane
+    if pairs.exists():
+        logger.info("Znalezione pary walutowe:")
+        for pair in pairs:
+            logger.info(f"Para walutowa: {pair.name}")
+    else:
+        logger.info("Nie znaleziono żadnych par walutowych w bazie.")
+
+    return render(request, 'app_main/add_entry_modal.html', {
+        'pairs': pairs  # Przekazujemy dostępne pary do szablonu
+    })
 
 
 # Funkcja obliczająca PnL
@@ -481,15 +495,20 @@ def add_to_journal_with_full_data(request):
             fee = Decimal(data.get('fee', 0))
             trade_type = data.get('trade_type')
             win = data.get('win')
-            pair = data.get('pair')
+            pair_name = data.get('pair')
             risk_reward_ratio = Decimal(data.get('risk_reward_ratio'))
             calculated_leverage = Decimal(data.get('calculated_leverage'))
 
             # Zaokrąglamy risk_reward_ratio do 2 miejsc po przecinku i konwertujemy na string
             risk_reward_ratio = str(round(risk_reward_ratio, 2))
 
+            # Sprawdzanie, czy para walutowa już istnieje, jeśli nie - zapisujemy ją
+            pair, created = Pair.objects.get_or_create(name=pair_name)
+            if created:
+                print(f"Nowa para walutowa została zapisana: {pair_name}")
+
             # Wyświetlenie danych, które będą zapisane do bazy
-            print(f"Currency: {currency}, Deposit: {deposit}, PnL: {pnl}, Pair: {pair}")
+            print(f"Currency: {currency}, Deposit: {deposit}, PnL: {pnl}, Pair: {pair.name}")
             print(f"Trade Type: {trade_type}, Win: {win}, Fee: {fee}, Position: {position}")
             print(f"Entry Price: {entry}, Stop Loss: {stop_loss}, Target Price: {target_price}")
             print(f"Risk Reward Ratio (zaokrąglone): {risk_reward_ratio}")
@@ -507,7 +526,7 @@ def add_to_journal_with_full_data(request):
                 risk_type='currency',
                 position=position,
                 position_type='currency',
-                pair=pair,
+                pair=pair.name,  # Zapisujemy nazwę pary walutowej
                 trade_type=trade_type,
                 entry_price=entry,
                 stop_loss=stop_loss,
