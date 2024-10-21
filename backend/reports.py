@@ -125,7 +125,7 @@ def reports_view(request):
         tickangle=45       # Opcjonalnie: obraca etykiety o 45 stopni dla lepszej czytelności
     ),
     yaxis=dict(zeroline=True, zerolinecolor='black'),
-    )
+)
     bar_chart_pnl_html = bar_fig_pnl.to_html(full_html=False)
 
     # Przekazanie raportów i wykresów do szablonu
@@ -143,4 +143,65 @@ def reports_view(request):
         'current_month': selected_date.strftime('%B %Y'),  # Nazwa miesiąca
         'previous_month_url': previous_month_url,  # URL do poprzedniego miesiąca
         'next_month_url': next_month_url,  # URL do następnego miesiąca
+    })
+
+@login_required
+def filter_reports_view(request):
+    # Pobieranie dat z parametrów GET
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+
+    logger.info(f"Received start date: {start_date_str}, end date: {end_date_str}")
+
+    if start_date_str and end_date_str:
+        try:
+            start_date = date.fromisoformat(start_date_str)
+            end_date = date.fromisoformat(end_date_str)
+            logger.info(f"Parsed start date: {start_date}, end date: {end_date}")
+        except ValueError:
+            logger.error(f"Invalid date format. Start: {start_date_str}, End: {end_date_str}")
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+    else:
+        logger.warning("Missing date parameters.")
+        return JsonResponse({'error': 'Missing date parameters'}, status=400)
+
+    # Filtrowanie wpisów dziennika na podstawie zakresu dat
+    journal_entries = JournalEntry.objects.filter(
+        user=request.user,
+        entry_date__date__gte=start_date,
+        entry_date__date__lte=end_date,
+        win__in=['YES', 'NO']
+    )
+    logger.info(f"Filtered journal entries: {journal_entries.count()} entries found.")
+
+    # Generowanie raportu na podstawie przefiltrowanych danych
+    report_data = calculate_report_data(journal_entries)
+    logger.info(f"Report data: {report_data}")
+
+    # Tworzenie wykresu kołowego (pie chart)
+    pie_fig = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], values=[report_data['yes_count'], report_data['no_count']])])
+    pie_fig.update_layout(title=f"Win vs Lose - {start_date_str} to {end_date_str}")
+    pie_chart_html = pie_fig.to_html(full_html=False)
+    logger.info("Pie chart generated.")
+
+    # Tworzenie wykresu słupkowego (PnL)
+    pnl_entries = journal_entries.values('entry_date__date').annotate(daily_pnl=Sum('pnl')).order_by('entry_date__date')
+    dates = [entry['entry_date__date'].strftime('%Y-%m-%d') for entry in pnl_entries]
+    pnl_values = [entry['daily_pnl'] for entry in pnl_entries]
+
+    bar_fig = go.Figure(data=[go.Bar(x=dates, y=pnl_values, marker_color=['green' if x >= 0 else 'red' for x in pnl_values])])
+    bar_fig.update_layout(
+        title=f"Daily PnL from {start_date_str} to {end_date_str}",
+        xaxis_title="Date",
+        yaxis_title="PnL",
+        xaxis=dict(tickmode='array', tickvals=dates, ticktext=dates, tickangle=45),
+        yaxis=dict(zeroline=True, zerolinecolor='black'),
+    )
+    bar_chart_html = bar_fig.to_html(full_html=False)
+    logger.info("Bar chart generated.")
+
+    # Zwracamy oba wykresy w odpowiedzi JSON
+    return JsonResponse({
+        'pie_chart_html': pie_chart_html,
+        'bar_chart_html': bar_chart_html
     })

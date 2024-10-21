@@ -16,6 +16,7 @@ from django.db.models import Case, When, IntegerField
 import logging
 
 logger = logging.getLogger(__name__)  # Używamy loggera Django
+
 def dashboard_view(request):
     print("Funkcja dashboard_view została wywołana")
 

@@ -9,6 +9,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/calendar.css' %}"> <!-- Dodaj link do pliku CSS -->
 </head>
 <body>
+    <a href="{% url 'dashboard' %}">
+        <button type="button">Back to Dashboard</button>
+    </a>
     <h1>WinRate Reports</h1>
     <h3>Performance Calendar</h3>
 
@@ -104,8 +107,36 @@
         </div>
     </div>
 
+ <!-- Formularz do wyboru zakresu dat -->
+ <form method="GET" action="{% url 'reports' %}">
+    <label for="start_date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+    
+    <label for="end_date">End Date:</label>
+    <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+    
+    <button type="submit">Filter</button>
+</form>
+
+<!-- Wykres kołowy -->
+<div>
+    <h3>WinRate Pie Chart</h3>
+    <div id="pie-chart-filtered">
+        {{ pie_chart_filtered_html|safe }}
+    </div>
+</div>
+
+<!-- Wykres słupkowy PnL -->
+<div>
+    <h3>Daily PnL</h3>
+    <div id="bar-chart-filtered">
+        {{ bar_chart_filtered_pnl_html|safe }}
+    </div>
+</div>
+
     <a href="{% url 'dashboard' %}">
         <button type="button">Back to Dashboard</button>
     </a>
+    <script src="{% static 'js/filterReports.js' %}"></script>
 </body>
 </html>
