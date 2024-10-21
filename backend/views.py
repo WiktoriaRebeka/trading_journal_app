@@ -11,6 +11,8 @@ from datetime import datetime
 from django.db.models import Q
 from decimal import Decimal
 from .models import Pair
+from django.db.models import Case, When, IntegerField
+
 
 def dashboard_view(request):
     print("Funkcja dashboard_view została wywołana")
@@ -123,9 +125,17 @@ def save_pair(request):
 
 @login_required
 def journal_view(request):
-    # Pobieramy wszystkie wpisy użytkownika posortowane według daty stworzenia
-    journal_entries = JournalEntry.objects.filter(user=request.user).order_by('-entry_date')
+    # Pobieramy wszystkie wpisy użytkownika
+    journal_entries = JournalEntry.objects.filter(user=request.user)
 
+    # Najpierw sortujemy według braku `entry_date` (brak daty na górze), a potem malejąco po `entry_date`
+    journal_entries = journal_entries.annotate(
+        no_entry_date=Case(
+            When(entry_date__isnull=True, then=1),
+            default=0,
+            output_field=IntegerField()
+        )
+    ).order_by('-no_entry_date', '-entry_date')
 
     # Pobieramy dostępne pary do filtrowania
     pairs = Pair.objects.all()
@@ -160,7 +170,6 @@ def add_to_journal(request):
             print("Dane przesłane do serwera:", data)
 
             # Lista wymaganych pól
-# Lista wymaganych pól bez entry_date i exit_date, bo będą one opcjonalne
             required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
 
             for field in required_fields:
@@ -191,7 +200,7 @@ def add_to_journal(request):
             else:
                 exit_date = None  # Jeśli nie ma daty wyjścia, zostawiamy ją jako None
 
-            # Obliczamy wartość ryzyka i wygranej w walucie
+            # Obliczamy wartość ryzyka w walucie lub procentach
             deposit = Decimal(data['deposit'])
             risk_value = Decimal(data['risk'])
             risk_type = data['risk_type']
@@ -201,7 +210,7 @@ def add_to_journal(request):
                 print("Błąd: brak wartości ryzyka lub depozytu.")
                 return JsonResponse({'success': False, 'message': 'Brak wartości ryzyka lub depozytu.'}, status=400)
 
-            # Obliczamy wartość ryzyka w walucie
+            # Jeśli ryzyko podane jest w procentach, przeliczamy je na walutę
             risk_amount = (risk_value / 100) * deposit if risk_type == 'percent' else risk_value
             print(f"Obliczona wartość ryzyka (risk_amount): {risk_amount}")  # Wyświetlenie wartości ryzyka
 
@@ -235,6 +244,7 @@ def add_to_journal(request):
                 exit_date=exit_date  # Ustawiamy datę wyjścia
             )
             journal_entry.save()
+            print(f"New journal entry saved: {journal_entry}")
             print("Wpis został pomyślnie dodany")
             return JsonResponse({'success': True})
 

@@ -72,7 +72,7 @@
 
     <!-- Monthly Report -->
     <div>
-        <h3>WinRate Report - Monthly</h3>
+        <h3>WinRate Report - Last 30 Days</h3>
         <p>Total number of trades with "YES" or "NO" result: {{ monthly_report.total_trades }}</p>
         <p>Number of trades with "YES": {{ monthly_report.yes_count }}</p>
         <p>Number of trades with "NO": {{ monthly_report.no_count }}</p>
@@ -81,32 +81,15 @@
         <p>Minimum required WinRate: {{ monthly_report.min_win_rate }}%</p>
         <p>Is profitable: {{ monthly_report.is_profitable }}</p>
 
-        <h4>Monthly WinRate Pie Chart</h4>
+        <h4>WinRate Pie Chart (Last 30 Days)</h4>
         <div id="pie-chart-monthly">
             {{ pie_chart_monthly_html|safe }}
         </div>
     </div>
 
-    <!-- Weekly Report -->
-    <div>
-        <h3>WinRate Report - Weekly</h3>
-        <p>Total number of trades with "YES" or "NO" result: {{ weekly_report.total_trades }}</p>
-        <p>Number of trades with "YES": {{ weekly_report.yes_count }}</p>
-        <p>Number of trades with "NO": {{ weekly_report.no_count }}</p>
-        <p>WinRate: {{ weekly_report.win_rate }}%</p>
-        <p>Average Risk-Reward Ratio (RRR): {{ weekly_report.avg_rrr }}</p>
-        <p>Minimum required WinRate: {{ weekly_report.min_win_rate }}%</p>
-        <p>Is profitable: {{ weekly_report.is_profitable }}</p>
-
-        <h4>Weekly WinRate Pie Chart</h4>
-        <div id="pie-chart-weekly">
-            {{ pie_chart_weekly_html|safe }}
-        </div>
-    </div>
-
     <!-- Daily Report -->
     <div>
-        <h3>WinRate Report - Daily</h3>
+        <h3>WinRate Report - Today</h3>
         <p>Total number of trades with "YES" or "NO" result: {{ daily_report.total_trades }}</p>
         <p>Number of trades with "YES": {{ daily_report.yes_count }}</p>
         <p>Number of trades with "NO": {{ daily_report.no_count }}</p>
@@ -115,7 +98,7 @@
         <p>Minimum required WinRate: {{ daily_report.min_win_rate }}%</p>
         <p>Is profitable: {{ daily_report.is_profitable }}</p>
 
-        <h4>Daily WinRate Pie Chart</h4>
+        <h4>WinRate Pie Chart (Today)</h4>
         <div id="pie-chart-daily">
             {{ pie_chart_daily_html|safe }}
         </div>

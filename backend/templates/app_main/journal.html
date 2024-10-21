@@ -54,7 +54,7 @@
             <th>Exit Date</th>
             <th>Currency</th>
             <th>Deposit</th>
-            <th>Risk [%]</th>
+            <th>Risk</th>
             <th>Position Size</th>
             <th>Leverage</th>
             <th>Currency Pair</th>
@@ -83,7 +83,7 @@
             </td>
             <td>{{ entry.currency }}</td>
             <td>{{ entry.deposit|floatformat:2 }}</td>
-            <td>{{ entry.risk|floatformat:2 }}</td>
+            <td>{{ entry.calculated_risk_amount|floatformat:2 }}</td>
             <td>{{ entry.calculated_position|floatformat:2 }}</td>
             <td>{{ entry.calculated_leverage|floatformat:0 }}</td>
             <td>{{ entry.pair }}</td>

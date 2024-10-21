@@ -30,8 +30,11 @@ def reports_view(request):
     # Raporty dla różnych okresów (nie zmieniają się z miesiącem)
     total_report = calculate_report_data(journal_entries)
     monthly_report = get_report_for_period(journal_entries, days=30)
-    weekly_report = get_report_for_period(journal_entries, days=7)
-    daily_report = get_report_for_period(journal_entries, days=1)
+
+    # Raport dzisiejszy
+    today = timezone.now().date()
+    daily_entries = journal_entries.filter(entry_date__date=today)
+    daily_report = calculate_report_data(daily_entries)
 
     # Zakres dat dla wybranego miesiąca
     first_day_of_month = selected_date.replace(day=1)
@@ -88,8 +91,20 @@ def reports_view(request):
     # --------- Tworzenie wykresu kołowego (pie chart) dla ogólnego raportu ---------
     pie_fig_total = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], 
                                            values=[total_report['yes_count'], total_report['no_count']])])
-    pie_fig_total.update_layout(title="Win vs Lose")
+    pie_fig_total.update_layout(title="Win vs Lose - Total")
     pie_chart_total_html = pie_fig_total.to_html(full_html=False)
+
+    # Pie chart dla ostatnich 30 dni
+    pie_fig_monthly = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], 
+                                             values=[monthly_report['yes_count'], monthly_report['no_count']])])
+    pie_fig_monthly.update_layout(title="Win vs Lose - Last 30 Days")
+    pie_chart_monthly_html = pie_fig_monthly.to_html(full_html=False)
+
+    # Pie chart dla dzisiejszego dnia
+    pie_fig_daily = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], 
+                                           values=[daily_report['yes_count'], daily_report['no_count']])])
+    pie_fig_daily.update_layout(title="Win vs Lose - Today")
+    pie_chart_daily_html = pie_fig_daily.to_html(full_html=False)
 
     # Przygotowanie danych dla wykresu słupkowego (PnL)
     dates = [entry['entry_date__date'].strftime('%Y-%m-%d') for entry in daily_pnl_data]
@@ -110,98 +125,15 @@ def reports_view(request):
     return render(request, 'app_main/reports.html', {
         'total_report': total_report,
         'monthly_report': monthly_report,
-        'weekly_report': weekly_report,
         'daily_report': daily_report,
         'daily_data': daily_data,  # Przekazujemy dane do kalendarza
         'empty_days_before': empty_days_before,  # Puste dni przed
         'empty_days_after': empty_days_after,    # Puste dni po
-        'pie_chart_total_html': pie_chart_total_html,  # Dodanie wykresu kołowego
+        'pie_chart_total_html': pie_chart_total_html,  # Dodanie wykresu kołowego (total)
+        'pie_chart_monthly_html': pie_chart_monthly_html,  # Dodanie wykresu kołowego (30 dni)
+        'pie_chart_daily_html': pie_chart_daily_html,  # Dodanie wykresu kołowego (dzienny)
         'bar_chart_pnl_html': bar_chart_pnl_html,      # Dodanie wykresu PnL
         'current_month': selected_date.strftime('%B %Y'),  # Nazwa miesiąca
         'previous_month_url': previous_month_url,  # URL do poprzedniego miesiąca
         'next_month_url': next_month_url,  # URL do następnego miesiąca
-    })
-
-@login_required
-def calendar_partial_view(request, year, month):
-    # Funkcja dla wyświetlania częściowego kalendarza na podstawie AJAX
-
-    # Pobierz transakcje użytkownika
-    journal_entries = JournalEntry.objects.filter(
-        user=request.user, 
-        win__in=['YES', 'NO'],
-        entry_date__year=year, 
-        entry_date__month=month
-    )
-
-    # Zmienna aktualnego dnia, roku, miesiąca
-    today = date(year, month, 1)
-    days_in_month = monthrange(today.year, today.month)[1]
-
-    daily_data = []
-    for day in range(1, days_in_month + 1):
-        current_date = date(today.year, today.month, day)
-        day_entry = next(
-            (entry for entry in journal_entries if entry.entry_date.date() == current_date), 
-            None
-        )
-
-        if day_entry:
-            pnl = day_entry.pnl
-            total_trades = day_entry.total_trades
-            win_trades = day_entry.win_trades
-            winrate = round((win_trades / total_trades) * 100, 2) if total_trades > 0 else 0
-            daily_data.append({
-                'date': current_date,
-                'pnl': pnl,
-                'total_trades': total_trades,
-                'winrate': winrate
-            })
-        else:
-            daily_data.append({
-                'date': current_date,
-                'pnl': None,
-                'total_trades': 0,
-                'winrate': None
-            })
-
-    # Oblicz puste dni przed i po, aby wyrównać kalendarz
-    first_weekday_of_month = today.weekday()
-    empty_days_before = first_weekday_of_month
-    total_cells = empty_days_before + len(daily_data)
-    empty_days_after = (7 - total_cells % 7) % 7
-
-    return JsonResponse({
-        'calendar_html': render_to_string('app_main/calendar_partial.html', {
-            'daily_data': daily_data,
-            'empty_days_before': empty_days_before,
-            'empty_days_after': empty_days_after,
-        })
-    })
-
-@login_required
-def monthly_report_view(request):
-    journal_entries = JournalEntry.objects.filter(user=request.user, win__in=['YES', 'NO'])
-    monthly_report = get_report_for_period(journal_entries, days=30)
-
-    return render(request, 'app_main/monthly_report.html', {
-        'monthly_report': monthly_report,
-    })
-
-@login_required
-def weekly_report_view(request):
-    journal_entries = JournalEntry.objects.filter(user=request.user, win__in=['YES', 'NO'])
-    weekly_report = get_report_for_period(journal_entries, days=7)
-
-    return render(request, 'app_main/weekly_report.html', {
-        'weekly_report': weekly_report,
-    })
-
-@login_required
-def daily_report_view(request):
-    journal_entries = JournalEntry.objects.filter(user=request.user, win__in=['YES', 'NO'])
-    daily_report = get_report_for_period(journal_entries, days=1)
-
-    return render(request, 'app_main/daily_report.html', {
-        'daily_report': daily_report,
     })
