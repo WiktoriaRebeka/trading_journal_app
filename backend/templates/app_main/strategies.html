@@ -95,17 +95,16 @@
         </thead>
         <tbody id="strategies-tbody">
             {% for strategy_data in strategies_with_attachments %}
-            <tr>
-                <td>{{ strategy_data.strategy.name }}</td>
-                <td>{{ strategy_data.strategy.description }}</td>
-                <td>{{ strategy_data.strategy.timeframe }}</td>
-                <td>{{ strategy_data.strategy.indicators }}</td>
-                <td>{{ strategy_data.strategy.entry_rules }}</td>
-                <td>{{ strategy_data.strategy.exit_rules }}</td>
-                <td>{{ strategy_data.strategy.type }}</td>
-                <td>{{ strategy_data.strategy.notes }}</td>
+            <tr data-strategy-id="{{ strategy_data.strategy.id }}">
+                <td class="name">{{ strategy_data.strategy.name }}</td>
+                <td class="description">{{ strategy_data.strategy.description }}</td>
+                <td class="timeframe">{{ strategy_data.strategy.timeframe }}</td>
+                <td class="indicators">{{ strategy_data.strategy.indicators }}</td>
+                <td class="entry_rules">{{ strategy_data.strategy.entry_rules }}</td>
+                <td class="exit_rules">{{ strategy_data.strategy.exit_rules }}</td>
+                <td class="type">{{ strategy_data.strategy.type }}</td>
+                <td class="notes">{{ strategy_data.strategy.notes }}</td>
                 <td>
-                    <!-- Wyświetlanie załączników -->
                     <ul class="attachments-list">
                         {% for attachment in strategy_data.attachments %}
                         <li><a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name }}</a></li>
@@ -117,9 +116,10 @@
                 <td>
                     <!-- Przycisk edytowania -->
                     <button type="button" class="edit-strategy-button" data-id="{{ strategy_data.strategy.id }}">Edit</button>
-                    
-                    <!-- Przycisk usuwania -->
+                    <!-- Przycisk zapisywania, ukryty na początku -->
+                    <button type="button" class="save-strategy-button" data-id="{{ strategy_data.strategy.id }}" style="display:none;">Save</button>
                     <button type="button" class="delete-strategy-button" data-id="{{ strategy_data.strategy.id }}">Delete</button>
+
                 </td>
             </tr>
             {% endfor %}

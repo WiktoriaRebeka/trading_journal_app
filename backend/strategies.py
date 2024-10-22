@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Strategy, Attachment
+from django.views.decorators.csrf import csrf_protect
+import json
 
 
 @login_required
@@ -51,6 +53,7 @@ def handle_add_strategy(request):
 
     return JsonResponse({'success': False})
 
+
 @login_required
 def delete_strategy(request, strategy_id):
     try:
@@ -61,5 +64,32 @@ def delete_strategy(request, strategy_id):
         return JsonResponse({'success': False, 'message': 'Strategy not found'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
-    
 
+
+@login_required
+@csrf_protect
+def update_strategy(request, strategy_id):
+    if request.method == 'POST':
+        try:
+            strategy = Strategy.objects.get(id=strategy_id, user=request.user)
+            data = json.loads(request.body)
+
+            # Aktualizacja danych strategii
+            strategy.name = data.get('name', strategy.name)
+            strategy.description = data.get('description', strategy.description)
+            strategy.timeframe = data.get('timeframe', strategy.timeframe)
+            strategy.indicators = data.get('indicators', strategy.indicators)
+            strategy.entry_rules = data.get('entry_rules', strategy.entry_rules)
+            strategy.exit_rules = data.get('exit_rules', strategy.exit_rules)
+            strategy.type = data.get('type', strategy.type)
+            strategy.notes = data.get('notes', strategy.notes)
+
+            # Zapisz zmiany
+            strategy.save()
+
+            return JsonResponse({'success': True})
+        except Strategy.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Strategy not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
