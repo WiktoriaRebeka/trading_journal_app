@@ -26,12 +26,12 @@
 
 
             <label for="pairNE">Currency Pair:</label>
-<input type="text" id="pairNE" name="pairNE" required list="pairs">
-<datalist id="pairs">
-    {% for pair in pairs %}
-    <option value="{{ pair.name }}">
-    {% endfor %}
-</datalist>
+                <input type="text" id="pairNE" name="pairNE" required list="pairs">
+                <datalist id="pairs">
+                {% for pair in pairs %}
+                <option value="{{ pair.name }}">
+                {% endfor %}
+                </datalist>
 
 
             <label for="trade_typeNE">Trade Type:</label>

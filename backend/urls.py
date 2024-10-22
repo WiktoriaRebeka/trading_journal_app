@@ -4,6 +4,7 @@ from django.urls import path, include
 from users import views as user_views
 from . import reports
 from . import views
+from . import strategies  # Importujemy strategies.py
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Ścieżka dla panelu admina
@@ -25,7 +26,6 @@ urlpatterns = [
     path('update-entry-dates/<int:entry_id>/', views.update_entry_dates, name='update_entry_dates'),
     path('filter-reports/', reports.filter_reports_view, name='filter_reports'),  # Poprawiony import
     path('winrate-by-pair/', reports.winrate_by_currency_pair_view, name='winrate_by_currency_pair'),  # Nowa ścieżka do WinRate dla pary
-    path('strategies/', views.strategies_view, name='strategies'),
-    
-
+    path('strategies/', views.strategies_view, name='strategies'),  # Widok dla strategii
+    path('add-strategy/', strategies.handle_add_strategy, name='add_strategy'),  # Obsługa dodawania strategii z strategies.py
 ]

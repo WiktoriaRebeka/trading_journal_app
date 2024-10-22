@@ -12,6 +12,7 @@ from django.db.models import Q
 from decimal import Decimal
 from .models import Pair
 from django.db.models import Case, When, IntegerField
+from .models import Strategy
 
 import logging
 
@@ -585,6 +586,10 @@ def update_entry_dates(request, entry_id):
 
 
 
+@login_required
 def strategies_view(request):
-    # Tu będziesz pobierać strategie użytkownika w przyszłości
-    return render(request, 'app_main/strategies.html')
+    # Pobranie strategii dla aktualnie zalogowanego użytkownika
+    user_strategies = Strategy.objects.filter(user=request.user)
+    
+    # Renderowanie widoku z tabelą strategii
+    return render(request, 'strategies.html', {'strategies': user_strategies})

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Strategies</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
 </head>
 <body>
     <h1>My Strategies</h1>
@@ -14,108 +14,99 @@
         <button type="button">Back to Dashboard</button>
     </a>
 
-    <!-- Formularz dodawania nowej strategii -->
-    <form method="POST" enctype="multipart/form-data" id="strategyForm">
-        {% csrf_token %}
+    <!-- Przycisk do pokazania/ukrycia formularza dodawania nowej strategii -->
+    <button id="add-strategy-button">Add Strategy</button>
 
-        <!-- Nazwa strategii -->
-        <label for="strategy_name">Strategy Name:</label>
-        <input type="text" id="strategy_name" name="strategy_name" required>
+    <!-- Formularz dodawania nowej strategii, ukrywany na starcie -->
+    <div id="new-strategy-form" style="display: none;">
+        <form method="POST" enctype="multipart/form-data" id="strategyForm">
+            {% csrf_token %}
 
-        <!-- Opis strategii -->
-        <label for="strategy_description">Description:</label>
-        <textarea id="strategy_description" name="strategy_description" rows="3" required></textarea>
+            <!-- Nazwa strategii -->
+            <label for="strategy_name">Strategy Name:</label>
+            <input type="text" id="strategy_name" name="strategy_name" required><br>
 
-        <!-- Ramy czasowe -->
-        <label for="timeframe">Timeframe:</label>
-        <select id="timeframe" name="timeframe" required>
-            <option value="1M">1M</option>
-            <option value="3M">3M</option>
-            <option value="5M">5M</option>
-            <option value="15M">15M</option>
-            <option value="30M">30M</option>
-            <option value="1H">1H</option>
-            <option value="4H">4H</option>
-            <option value="1D">1D</option>
-        </select>
+            <!-- Opis strategii -->
+            <label for="strategy_description">Description:</label>
+            <textarea id="strategy_description" name="strategy_description" rows="3" required></textarea><br>
 
-        <!-- Wskaźniki techniczne -->
-        <label for="indicators">Technical Indicators:</label>
-        <input type="text" id="indicators" name="indicators" placeholder="e.g. MACD, RSI, EMA" required>
+            <!-- Ramy czasowe -->
+            <label for="timeframe">Timeframe:</label>
+            <select id="timeframe" name="timeframe" required>
+                <option value="1M">1M</option>
+                <option value="3M">3M</option>
+                <option value="5M">5M</option>
+                <option value="15M">15M</option>
+                <option value="30M">30M</option>
+                <option value="1H">1H</option>
+                <option value="4H">4H</option>
+                <option value="1D">1D</option>
+            </select><br>
 
-        <!-- Zasady wejścia -->
-        <label for="entry_rules">Entry Rules:</label>
-        <textarea id="entry_rules" name="entry_rules" rows="3" required></textarea>
+            <!-- Wskaźniki techniczne -->
+            <label for="indicators">Technical Indicators:</label>
+            <input type="text" id="indicators" name="indicators" placeholder="e.g. MACD, RSI, EMA" required><br>
 
-        <!-- Zasady wyjścia -->
-        <label for="exit_rules">Exit Rules:</label>
-        <textarea id="exit_rules" name="exit_rules" rows="3" required></textarea>
+            <!-- Zasady wejścia -->
+            <label for="entry_rules">Entry Rules:</label>
+            <textarea id="entry_rules" name="entry_rules" rows="3" required></textarea><br>
 
-        <!-- Typ strategii -->
-        <label for="strategy_type">Strategy Type:</label>
-        <input type="text" id="strategy_type" name="strategy_type" list="strategy_types" placeholder="e.g. scalping, swing, intraday" required>
-        <datalist id="strategy_types">
-            <option value="scalping"></option>
-            <option value="intraday"></option>
-            <option value="daytrading"></option>
-            <option value="swing"></option>
-        </datalist>
+            <!-- Zasady wyjścia -->
+            <label for="exit_rules">Exit Rules:</label>
+            <textarea id="exit_rules" name="exit_rules" rows="3" required></textarea><br>
 
-        <!-- Uwagi/Notatki -->
-        <label for="notes">Notes/Comments:</label>
-        <textarea id="notes" name="notes" rows="3"></textarea>
+            <!-- Typ strategii -->
+            <label for="strategy_type">Strategy Type:</label>
+            <input type="text" id="strategy_type" name="strategy_type" list="strategy_types" placeholder="e.g. scalping, swing, intraday" required><br>
+            <datalist id="strategy_types">
+                <option value="scalping"></option>
+                <option value="intraday"></option>
+                <option value="daytrading"></option>
+                <option value="swing"></option>
+            </datalist><br>
 
-        <!-- Załączniki -->
-        <label for="attachments">Attachments (max 5):</label>
-        <input type="file" id="attachments" name="attachments" multiple accept="image/*" max="5">
+            <!-- Uwagi/Notatki -->
+            <label for="notes">Notes/Comments:</label>
+            <textarea id="notes" name="notes" rows="3"></textarea><br>
 
-        <button type="submit">Add Strategy</button>
-    </form>
+            <!-- Załączniki -->
+            <label for="attachments">Attachments (max 5):</label>
+            <input type="file" id="attachments" name="attachments" multiple accept="image/*" max="5"><br>
 
-    <!-- Sekcja listy strategii -->
-    <h2>Your Strategies</h2>
-    <div id="strategies-list">
-        <!-- Tabela strategii -->
-        <table>
-            <thead>
-                <tr>
-                    <th>Strategy Name</th>
-                    <th>Description</th>
-                    <th>Timeframe</th>
-                    <th>Indicators</th>
-                    <th>Entry Rules</th>
-                    <th>Exit Rules</th>
-                    <th>Strategy Type</th>
-                    <th>Notes</th>
-                    <th>Attachments</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for strategy in strategies %}
-                <tr>
-                    <td>{{ strategy.name }}</td>
-                    <td>{{ strategy.description }}</td>
-                    <td>{{ strategy.timeframe }}</td>
-                    <td>{{ strategy.indicators }}</td>
-                    <td>{{ strategy.entry_rules }}</td>
-                    <td>{{ strategy.exit_rules }}</td>
-                    <td>{{ strategy.type }}</td>
-                    <td>{{ strategy.notes }}</td>
-                    <td>
-                        {% for attachment in strategy.attachments.all %}
-                        <a href="{{ attachment.url }}" target="_blank">View</a>
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="9">No strategies added yet.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <button type="submit">Add Strategy</button>
+        </form>
     </div>
-    <script src="{% static 'js/strategies.js' %}"></script>
 
+    <!-- Tabelka strategii -->
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Timeframe</th>
+                <th>Technical Indicators</th>
+                <th>Entry Rules</th>
+                <th>Exit Rules</th>
+                <th>Type</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody id="strategies-tbody">
+            {% for strategy in strategies %}
+            <tr>
+                <td>{{ strategy.name }}</td>
+                <td>{{ strategy.description }}</td>
+                <td>{{ strategy.timeframe }}</td>
+                <td>{{ strategy.indicators }}</td>
+                <td>{{ strategy.entry_rules }}</td>
+                <td>{{ strategy.exit_rules }}</td>
+                <td>{{ strategy.type }}</td>
+                <td>{{ strategy.notes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="{% static 'js/strategies.js' %}"></script>
 </body>
 </html>
