@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Strategies</title>
     {% load static %}
-    
 </head>
 <body>
     <h1>My Strategies</h1>
@@ -118,8 +117,8 @@
                     <button type="button" class="edit-strategy-button" data-id="{{ strategy_data.strategy.id }}">Edit</button>
                     <!-- Przycisk zapisywania, ukryty na początku -->
                     <button type="button" class="save-strategy-button" data-id="{{ strategy_data.strategy.id }}" style="display:none;">Save</button>
+                    <!-- Przycisk usuwania -->
                     <button type="button" class="delete-strategy-button" data-id="{{ strategy_data.strategy.id }}">Delete</button>
-
                 </td>
             </tr>
             {% endfor %}

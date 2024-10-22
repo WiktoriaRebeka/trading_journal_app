@@ -2,8 +2,9 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Strategy, Attachment
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 import json
-
 
 @login_required
 def handle_add_strategy(request):
@@ -67,29 +68,41 @@ def delete_strategy(request, strategy_id):
 
 
 @login_required
-@csrf_protect
+@csrf_exempt
 def update_strategy(request, strategy_id):
     if request.method == 'POST':
         try:
             strategy = Strategy.objects.get(id=strategy_id, user=request.user)
-            data = json.loads(request.body)
 
             # Aktualizacja danych strategii
-            strategy.name = data.get('name', strategy.name)
-            strategy.description = data.get('description', strategy.description)
-            strategy.timeframe = data.get('timeframe', strategy.timeframe)
-            strategy.indicators = data.get('indicators', strategy.indicators)
-            strategy.entry_rules = data.get('entry_rules', strategy.entry_rules)
-            strategy.exit_rules = data.get('exit_rules', strategy.exit_rules)
-            strategy.type = data.get('type', strategy.type)
-            strategy.notes = data.get('notes', strategy.notes)
+            strategy.name = request.POST.get('name', strategy.name)
+            strategy.description = request.POST.get('description', strategy.description)
+            strategy.timeframe = request.POST.get('timeframe', strategy.timeframe)
+            strategy.indicators = request.POST.get('indicators', strategy.indicators)
+            strategy.entry_rules = request.POST.get('entry_rules', strategy.entry_rules)
+            strategy.exit_rules = request.POST.get('exit_rules', strategy.exit_rules)
+            strategy.type = request.POST.get('type', strategy.type)
+            strategy.notes = request.POST.get('notes', strategy.notes)
 
-            # Zapisz zmiany
+            # Obsługa nowych załączników
+            if request.FILES.getlist('attachments'):
+                for file in request.FILES.getlist('attachments'):
+                    Attachment.objects.create(strategy=strategy, file=file)
+
+            # Zapisz zmiany w strategii
             strategy.save()
 
-            return JsonResponse({'success': True})
+            # Pobierz zaktualizowaną listę załączników
+            updated_attachments = [{'name': attachment.file.name, 'url': attachment.file.url} for attachment in strategy.attachments.all()]
+
+            return JsonResponse({
+                'success': True,
+                'attachments': updated_attachments
+            })
+
         except Strategy.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'Strategy not found.'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
+    
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
