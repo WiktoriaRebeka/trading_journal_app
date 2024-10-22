@@ -582,3 +582,9 @@ def update_entry_dates(request, entry_id):
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+
+def strategies_view(request):
+    # Tu będziesz pobierać strategie użytkownika w przyszłości
+    return render(request, 'app_main/strategies.html')

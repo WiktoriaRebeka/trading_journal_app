@@ -45,3 +45,25 @@ class JournalEntry(models.Model):
 
     def __str__(self):
         return f'Entry for {self.pair} by {self.user}'
+
+
+class Strategy(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    timeframe = models.CharField(max_length=10)
+    indicators = models.CharField(max_length=255)
+    entry_rules = models.TextField()
+    exit_rules = models.TextField()
+    type = models.CharField(max_length=50)
+    notes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class Attachment(models.Model):
+    strategy = models.ForeignKey(Strategy, related_name='attachments', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='attachments/')
+
+    def __str__(self):
+        return self.file.name

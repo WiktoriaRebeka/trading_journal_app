@@ -25,5 +25,7 @@ urlpatterns = [
     path('update-entry-dates/<int:entry_id>/', views.update_entry_dates, name='update_entry_dates'),
     path('filter-reports/', reports.filter_reports_view, name='filter_reports'),  # Poprawiony import
     path('winrate-by-pair/', reports.winrate_by_currency_pair_view, name='winrate_by_currency_pair'),  # Nowa ścieżka do WinRate dla pary
+    path('strategies/', views.strategies_view, name='strategies'),
+    
 
 ]
