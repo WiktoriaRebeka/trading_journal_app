@@ -134,6 +134,26 @@
     </div>
 </div>
 
+<form id="pair-form">
+    <label for="pair">Choose Currency Pair:</label>
+    <input type="text" id="pair" name="pair" list="pairs" required>
+    <datalist id="pairs">
+        {% for pair in pairs %}
+        <option value="{{ pair.name }}">
+        {% endfor %}
+    </datalist>
+    <button type="submit">Show WinRate</button>
+</form>
+
+<!-- Kontener na wykres WinRate dla par walutowych -->
+<div>
+    <h3>WinRate Pie Chart for Selected Pair</h3>
+    <div id="pie-chart-pairs">
+        {{ pie_chart_pairs_html|safe }}
+    </div>
+</div>
+
+
     <a href="{% url 'dashboard' %}">
         <button type="button">Back to Dashboard</button>
     </a>

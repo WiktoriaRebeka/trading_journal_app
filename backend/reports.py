@@ -10,6 +10,7 @@ from calendar import monthrange
 from django.utils.timezone import now
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from .models import Pair
 
 import logging
 
@@ -26,7 +27,7 @@ def reports_view(request):
 
     # Pobierz wszystkie transakcje użytkownika z wynikiem YES lub NO
     journal_entries = JournalEntry.objects.filter(user=request.user, win__in=['YES', 'NO'])
-
+    pairs = Pair.objects.all()
     # Raporty dla różnych okresów (nie zmieniają się z miesiącem)
     total_report = calculate_report_data(journal_entries)
     monthly_report = get_report_for_period(journal_entries, days=30)
@@ -140,6 +141,7 @@ def reports_view(request):
         'pie_chart_monthly_html': pie_chart_monthly_html,  # Dodanie wykresu kołowego (30 dni)
         'pie_chart_daily_html': pie_chart_daily_html,  # Dodanie wykresu kołowego (dzienny)
         'bar_chart_pnl_html': bar_chart_pnl_html,      # Dodanie wykresu PnL
+        'pairs': pairs,
         'current_month': selected_date.strftime('%B %Y'),  # Nazwa miesiąca
         'previous_month_url': previous_month_url,  # URL do poprzedniego miesiąca
         'next_month_url': next_month_url,  # URL do następnego miesiąca
@@ -205,3 +207,52 @@ def filter_reports_view(request):
         'pie_chart_html': pie_chart_html,
         'bar_chart_html': bar_chart_html
     })
+
+
+@login_required
+def winrate_by_currency_pair_view(request):
+    try:
+        # Pobranie pary walutowej od użytkownika z parametrów URL
+        pair = request.GET.get('pair')
+        logger.info(f"Requested pair: {pair}")
+
+        if not pair:
+            logger.error("No pair provided")
+            return JsonResponse({'error': 'No pair provided'}, status=400)
+
+        # Filtrowanie wpisów dziennika na podstawie wybranej pary walutowej
+        journal_entries = JournalEntry.objects.filter(user=request.user, pair=pair)
+
+        if not journal_entries.exists():
+            logger.error(f"No journal entries found for pair: {pair}")
+            return JsonResponse({'error': 'No journal entries found for this pair'}, status=404)
+
+        # Obliczenie WinRate (procentowy wskaźnik wygranych transakcji)
+        winrate_data = journal_entries.aggregate(
+            total_trades=Count('id'),
+            win_trades=Count(Case(When(win='YES', then=1), output_field=IntegerField())),
+        )
+
+        total_trades = winrate_data['total_trades']
+        win_trades = winrate_data['win_trades']
+        win_rate = (win_trades * 100.0 / total_trades) if total_trades > 0 else 0
+
+        logger.info(f"Total trades: {total_trades}, Win trades: {win_trades}, Win rate: {win_rate}%")
+
+        # Tworzenie wykresu kołowego (pie chart) dla wybranej pary walutowej
+        pie_fig = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], values=[win_trades, total_trades - win_trades])])
+        pie_fig.update_layout(title=f"Win vs Lose for {pair}")
+        pie_chart_html = pie_fig.to_html(full_html=False)
+
+        # Zwracamy wynik w formacie JSON
+        return JsonResponse({
+            'pie_chart_pair_html': pie_chart_html,  # Wykres kołowy dla pary walutowej
+            'pair': pair,
+            'total_trades': total_trades,
+            'win_trades': win_trades,
+            'win_rate': win_rate,
+        })
+    
+    except Exception as e:
+        logger.error(f"Error processing WinRate for pair {pair}: {e}")
+        return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
