@@ -1,24 +1,20 @@
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from .models import Strategy
+from .models import Strategy, Attachment
+
 
 @login_required
 def handle_add_strategy(request):
     """Obsługa dodawania nowej strategii."""
     if request.method == 'POST':
-        # Sprawdzenie, czy wszystkie wymagane pola są wypełnione
-        strategy_name = request.POST.get('strategy_name', '').strip()
-        strategy_description = request.POST.get('strategy_description', '').strip()
-        timeframe = request.POST.get('timeframe', '').strip()
-        indicators = request.POST.get('indicators', '').strip()
-        entry_rules = request.POST.get('entry_rules', '').strip()
-        exit_rules = request.POST.get('exit_rules', '').strip()
-        strategy_type = request.POST.get('strategy_type', '').strip()
-        notes = request.POST.get('notes', '').strip()  # Uwzględniamy możliwość braku notatek
-
-        # Walidacja danych
-        if not strategy_name or not strategy_description or not timeframe or not indicators or not entry_rules or not exit_rules or not strategy_type:
-            return JsonResponse({'success': False, 'error': 'Please fill in all required fields.'})
+        strategy_name = request.POST['strategy_name']
+        strategy_description = request.POST['strategy_description']
+        timeframe = request.POST['timeframe']
+        indicators = request.POST['indicators']
+        entry_rules = request.POST['entry_rules']
+        exit_rules = request.POST['exit_rules']
+        strategy_type = request.POST['strategy_type']
+        notes = request.POST.get('notes', '')  # Uwzględniamy możliwość braku notatek
 
         # Zapis strategii do bazy danych
         strategy = Strategy.objects.create(
@@ -32,6 +28,11 @@ def handle_add_strategy(request):
             type=strategy_type,
             notes=notes,
         )
+
+        # Obsługa załączników
+        if request.FILES.getlist('attachments'):
+            for file in request.FILES.getlist('attachments'):
+                Attachment.objects.create(strategy=strategy, file=file)
 
         # Zwracamy dane w formacie JSON do dodania wiersza
         return JsonResponse({
@@ -48,4 +49,17 @@ def handle_add_strategy(request):
             }
         })
 
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+    return JsonResponse({'success': False})
+
+@login_required
+def delete_strategy(request, strategy_id):
+    try:
+        strategy = Strategy.objects.get(id=strategy_id, user=request.user)
+        strategy.delete()
+        return JsonResponse({'success': True})
+    except Strategy.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Strategy not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+    
+

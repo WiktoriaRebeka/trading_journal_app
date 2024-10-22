@@ -28,4 +28,6 @@ urlpatterns = [
     path('winrate-by-pair/', reports.winrate_by_currency_pair_view, name='winrate_by_currency_pair'),  # Nowa ścieżka do WinRate dla pary
     path('strategies/', views.strategies_view, name='strategies'),  # Widok dla strategii
     path('add-strategy/', strategies.handle_add_strategy, name='add_strategy'),  # Obsługa dodawania strategii z strategies.py
+    path('delete-strategy/<int:strategy_id>/', strategies.delete_strategy, name='delete_strategy'),  # Ścieżka dla usuwania strategii
+
 ]

@@ -12,7 +12,7 @@ from django.db.models import Q
 from decimal import Decimal
 from .models import Pair
 from django.db.models import Case, When, IntegerField
-from .models import Strategy
+from .models import Strategy, Attachment
 
 import logging
 
@@ -585,11 +585,21 @@ def update_entry_dates(request, entry_id):
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 
 
-
 @login_required
 def strategies_view(request):
     # Pobranie strategii dla aktualnie zalogowanego użytkownika
     user_strategies = Strategy.objects.filter(user=request.user)
     
+    # Pobranie załączników dla każdej strategii
+    strategies_with_attachments = []
+    for strategy in user_strategies:
+        attachments = Attachment.objects.filter(strategy=strategy)
+        strategies_with_attachments.append({
+            'strategy': strategy,
+            'attachments': attachments,
+        })
+    
     # Renderowanie widoku z tabelą strategii
-    return render(request, 'strategies.html', {'strategies': user_strategies})
+    return render(request, 'app_main/strategies.html', {
+        'strategies_with_attachments': strategies_with_attachments
+    })
