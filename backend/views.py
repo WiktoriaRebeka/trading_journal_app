@@ -144,6 +144,8 @@ def journal_view(request):
     # Pobieramy dostępne pary do filtrowania
     pairs = Pair.objects.all()
 
+    strategies = Strategy.objects.filter(user=request.user)
+
     # Pobieranie filtrów z GET requestu
     pair_filter = request.GET.get('pair_filter')
     trade_type_filter = request.GET.get('trade_type_filter')
@@ -164,6 +166,7 @@ def journal_view(request):
     return render(request, 'app_main/journal.html', {
         'journal_entries': journal_entries,
         'pairs': pairs,
+        'strategies': strategies,  # Przekazujemy strategie
     })
 
 @csrf_exempt
@@ -172,6 +175,9 @@ def add_to_journal(request):
         try:
             data = json.loads(request.body)
             print("Dane przesłane do serwera:", data)
+ # Pobieramy strategię
+            strategy_id = data.get('strategy')
+            strategy = Strategy.objects.get(id=strategy_id, user=request.user) if strategy_id else None
 
             # Lista wymaganych pól
             required_fields = ['currency', 'deposit', 'risk', 'risk_type', 'position', 'position_type', 'pair', 'trade_type', 'entry', 'stop_loss', 'fee', 'target_choice', 'calculated_leverage', 'calculated_position']
@@ -245,7 +251,8 @@ def add_to_journal(request):
                 pnl=None,  # PnL początkowo ustawione na None
                 win=None,  # Ustawienie pola 'win' na NULL przy tworzeniu nowego wpisu
                 entry_date=entry_date,  # Ustawiamy datę wejścia
-                exit_date=exit_date  # Ustawiamy datę wyjścia
+                exit_date=exit_date,  # Ustawiamy datę wyjścia
+                strategy=strategy
             )
             journal_entry.save()
             print(f"New journal entry saved: {journal_entry}")
@@ -460,6 +467,9 @@ def add_to_journal_with_full_data(request):
         try:
             data = json.loads(request.body)
             print("Otrzymane dane z formularza (add_to_journal_with_full_data):", data)
+# Pobieramy strategię
+            strategy_id = data.get('strategy')
+            strategy = Strategy.objects.get(id=strategy_id, user=request.user) if strategy_id else None
 
             # Pobieranie danych z formularza
             entry_date = data.get('entry_date')  # Pobranie daty wejścia wybranej przez użytkownika
@@ -538,7 +548,8 @@ def add_to_journal_with_full_data(request):
                 calculated_position=position,
                 pnl=pnl,
                 win=win,
-                target_choice=risk_reward_ratio  # Zaokrąglona wartość jako string
+                target_choice=risk_reward_ratio,  # Zaokrąglona wartość jako string
+                strategy=strategy, 
             )
 
             journal_entry.save()

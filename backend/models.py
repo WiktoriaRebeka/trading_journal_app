@@ -41,6 +41,8 @@ class JournalEntry(models.Model):
     date_added = models.DateTimeField(null=True, blank=True)  # Nowe pole na datę dodania wpisu
     entry_date = models.DateTimeField(null=True, blank=True)  # Data wejścia
     exit_date = models.DateTimeField(null=True, blank=True)  # Data wyjścia
+    strategy = models.ForeignKey('Strategy', on_delete=models.SET_NULL, null=True, blank=True)  # Dodajemy strategię
+
 
 
     def __str__(self):

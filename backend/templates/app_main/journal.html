@@ -11,6 +11,7 @@
 
 <h1>Trade Journal</h1>
 <button id="create-entry-button">Add an Entry</button>
+
 <!-- Filter Form -->
 <form method="GET" action="{% url 'journal' %}">
     <label for="pair_filter">Currency Pair:</label>
@@ -53,6 +54,7 @@
             <th>Entry Date</th>
             <th>Exit Date</th>
             <th>Currency</th>
+            <th>Strategy</th>
             <th>Deposit</th>
             <th>Risk</th>
             <th>Position Size</th>
@@ -82,6 +84,16 @@
                        data-entry-id="{{ entry.id }}" />
             </td>
             <td>{{ entry.currency }}</td>
+            <td>
+                <select name="strategy" class="strategy-select" data-entry-id="{{ entry.id }}">
+                    <option value="">No Strategy</option>
+                    {% for strategy in strategies %}
+                        <option value="{{ strategy.id }}" {% if entry.strategy and entry.strategy.id == strategy.id %}selected{% endif %}>
+                            {{ strategy.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </td>
             <td>{{ entry.deposit|floatformat:2 }}</td>
             <td>{{ entry.calculated_risk_amount|floatformat:2 }}</td>
             <td>{{ entry.calculated_position|floatformat:2 }}</td>
@@ -121,7 +133,6 @@
 <script type="module" src="{% static 'js/journal_data.js' %}"></script>
 <!-- Odwołanie do pliku addNewEntry.js -->
 <script type="module" src="{% static 'js/addNewEntry.js' %}"></script>
-
 
 </body>
 </html>
