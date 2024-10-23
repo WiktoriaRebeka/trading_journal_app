@@ -5,10 +5,15 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def handle_add_strategy(request):
     """Obsługa dodawania nowej strategii."""
+    print("handle_add_strategy function triggered.")  # Dodaj ten print
     if request.method == 'POST':
         strategy_name = request.POST['strategy_name']
         strategy_description = request.POST['strategy_description']
@@ -31,6 +36,7 @@ def handle_add_strategy(request):
             type=strategy_type,
             notes=notes,
         )
+        logger.info("Strategy created successfully with ID: %s", strategy.id)
 
         # Obsługa załączników
         if request.FILES.getlist('attachments'):
@@ -49,6 +55,8 @@ def handle_add_strategy(request):
                 'exit_rules': strategy.exit_rules,
                 'type': strategy.type,
                 'notes': strategy.notes,
+                'attachments': [{'name': attachment.file.name, 'url': attachment.file.url} for attachment in strategy.attachments.all()]
+
             }
         })
 
