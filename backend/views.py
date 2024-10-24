@@ -614,3 +614,38 @@ def strategies_view(request):
     return render(request, 'app_main/strategies.html', {
         'strategies_with_attachments': strategies_with_attachments
     })
+
+@csrf_exempt
+@login_required
+def update_strategy_journal_entry(request, entry_id):
+    print("Funkcja update_strategy_journal_entry została wywołana.")
+    if request.method == 'POST':
+        try:
+            # Pobieramy dane z żądania
+            data = json.loads(request.body)
+            strategy_id = data.get('strategy_id')
+
+            # Logowanie danych
+            print(f"Updating strategy for Entry ID: {entry_id}, with Strategy ID: {strategy_id}")
+
+            if not strategy_id:
+                return JsonResponse({'success': False, 'message': 'Brak ID strategii.'}, status=400)
+
+            # Pobieramy wpis z dziennika
+            journal_entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
+
+            # Pobieramy strategię
+            strategy = get_object_or_404(Strategy, id=strategy_id, user=request.user)
+
+            # Aktualizacja strategii w wpisie
+            journal_entry.strategy = strategy
+            journal_entry.save()
+
+            return JsonResponse({'success': True})
+
+        except Strategy.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Nie znaleziono strategii.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})

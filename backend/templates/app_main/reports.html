@@ -153,6 +153,22 @@
     </div>
 </div>
 
+<form id="strategy-form">
+    <label for="strategy">Choose Strategy:</label>
+    <input type="text" id="strategy" name="strategy" list="strategies" required>
+    <datalist id="strategies">
+        {% for strategy in strategies %}
+        <option value="{{ strategy.name }}">
+        {% endfor %}
+    </datalist>
+    <button type="submit">Show WinRate</button>
+</form>
+<div>
+    <h3>WinRate Pie Chart for Selected Strategy</h3>
+    <div id="pie-chart-strategies">
+        {{ pie_chart_strategy_html|safe }}  <!-- Tutaj wygenerowany HTML dla wykresu -->
+    </div>
+</div>
 
     <a href="{% url 'dashboard' %}">
         <button type="button">Back to Dashboard</button>

@@ -30,6 +30,9 @@ urlpatterns = [
     path('add-strategy/', strategies.handle_add_strategy, name='add_strategy'),  # Obsługa dodawania strategii z strategies.py
     path('delete-strategy/<int:strategy_id>/', strategies.delete_strategy, name='delete_strategy'),  # Ścieżka dla usuwania strategii
     path('update-strategy/<int:strategy_id>/', strategies.update_strategy, name='update_strategy'),
+    path('update-strategy-journal-entry/<int:entry_id>/', views.update_strategy_journal_entry, name='update_strategy_journal_entry'),
+    path('winrate-by-strategy/', reports.winrate_by_strategy_view, name='winrate_by_strategy'),  # Widok dla strategii
+
 
 
 ]

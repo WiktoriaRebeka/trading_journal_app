@@ -11,10 +11,12 @@ from django.utils.timezone import now
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from .models import Pair
+from .models import Strategy  # Dodaj import modelu Strategy
 
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 @login_required
 def reports_view(request):
@@ -28,6 +30,10 @@ def reports_view(request):
     # Pobierz wszystkie transakcje użytkownika z wynikiem YES lub NO
     journal_entries = JournalEntry.objects.filter(user=request.user, win__in=['YES', 'NO'])
     pairs = Pair.objects.all()
+    
+    # Pobieramy strategie użytkownika
+    strategies = Strategy.objects.filter(user=request.user)  # Dodaj to
+
     # Raporty dla różnych okresów (nie zmieniają się z miesiącem)
     total_report = calculate_report_data(journal_entries)
     monthly_report = get_report_for_period(journal_entries, days=30)
@@ -129,7 +135,7 @@ def reports_view(request):
 )
     bar_chart_pnl_html = bar_fig_pnl.to_html(full_html=False)
 
-    # Przekazanie raportów i wykresów do szablonu
+    # Przekazanie raportów, wykresów i strategii do szablonu
     return render(request, 'app_main/reports.html', {
         'total_report': total_report,
         'monthly_report': monthly_report,
@@ -142,10 +148,12 @@ def reports_view(request):
         'pie_chart_daily_html': pie_chart_daily_html,  # Dodanie wykresu kołowego (dzienny)
         'bar_chart_pnl_html': bar_chart_pnl_html,      # Dodanie wykresu PnL
         'pairs': pairs,
+        'strategies': strategies,  # Dodajemy strategie do kontekstu
         'current_month': selected_date.strftime('%B %Y'),  # Nazwa miesiąca
         'previous_month_url': previous_month_url,  # URL do poprzedniego miesiąca
         'next_month_url': next_month_url,  # URL do następnego miesiąca
     })
+
 
 @login_required
 def filter_reports_view(request):
@@ -255,4 +263,45 @@ def winrate_by_currency_pair_view(request):
     
     except Exception as e:
         logger.error(f"Error processing WinRate for pair {pair}: {e}")
+        return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
+
+
+@login_required
+def winrate_by_strategy_view(request):
+    try:
+        # Pobranie strategii od użytkownika
+        strategy_name = request.GET.get('strategy')
+
+        # Filtrowanie wpisów dziennika na podstawie strategii
+        journal_entries = JournalEntry.objects.filter(user=request.user, strategy__name=strategy_name)
+
+        if not journal_entries.exists():
+            return JsonResponse({'error': 'No journal entries found for this strategy'}, status=404)
+
+        # Obliczenie WinRate
+        winrate_data = journal_entries.aggregate(
+            total_trades=Count('id'),
+            win_trades=Count(Case(When(win='YES', then=1), output_field=IntegerField())),
+        )
+
+        total_trades = winrate_data['total_trades']
+        win_trades = winrate_data['win_trades']
+        win_rate = (win_trades * 100.0 / total_trades) if total_trades > 0 else 0
+
+        # Tworzenie wykresu kołowego (pie chart) dla strategii
+        pie_fig = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], values=[win_trades, total_trades - win_trades])])
+        pie_fig.update_layout(title=f"Win vs Lose for {strategy_name}")
+        pie_chart_html = pie_fig.to_html(full_html=False)
+
+        # Zwracamy wynik do szablonu
+        return JsonResponse({
+            'pie_chart_strategy_html': pie_chart_html,  # Wykres kołowy dla strategii
+            'strategy': strategy_name,
+            'total_trades': total_trades,
+            'win_trades': win_trades,
+            'win_rate': win_rate,
+        })
+    
+    except Exception as e:
+        logger.error(f"Error processing WinRate for strategy {strategy_name}: {e}")
         return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
