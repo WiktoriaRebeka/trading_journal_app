@@ -6,6 +6,8 @@ from . import reports
 from . import views
 from . import strategies  # Importujemy strategies.py
 
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),  # Ścieżka dla panelu admina
     path('users/', include('users.urls')),  # Import ścieżek z aplikacji users
@@ -32,7 +34,6 @@ urlpatterns = [
     path('update-strategy/<int:strategy_id>/', strategies.update_strategy, name='update_strategy'),
     path('update-strategy-journal-entry/<int:entry_id>/', views.update_strategy_journal_entry, name='update_strategy_journal_entry'),
     path('winrate-by-strategy/', reports.winrate_by_strategy_view, name='winrate_by_strategy'),  # Widok dla strategii
-
-
+    path('upload-attachment/<int:entry_id>/', views.upload_attachment_to_journal_entry, name='upload_attachment_to_journal_entry'),
 
 ]

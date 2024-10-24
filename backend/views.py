@@ -12,7 +12,9 @@ from django.db.models import Q
 from decimal import Decimal
 from .models import Pair
 from django.db.models import Case, When, IntegerField
-from .models import Strategy, Attachment
+from .models import Strategy, Attachment, JournalEntryAttachment
+from django.shortcuts import render, get_object_or_404, redirect
+
 
 import logging
 
@@ -649,3 +651,22 @@ def update_strategy_journal_entry(request, entry_id):
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+@login_required
+def upload_attachment_to_journal_entry(request, entry_id):
+    if request.method == 'POST' and request.FILES.get('attachment'):
+        # Pobranie wpisu dziennika
+        journal_entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
+        
+        # Dodanie nowego załącznika
+        attachment = JournalEntryAttachment.objects.create(
+            journal_entry=journal_entry,
+            file=request.FILES['attachment']  # Zapisujemy przesłany plik
+        )
+        attachment.save()
+
+        # Powrót do widoku dziennika po przesłaniu pliku
+        return redirect('journal')
+
+    return JsonResponse({'error': 'Invalid request or missing file'}, status=400)
+

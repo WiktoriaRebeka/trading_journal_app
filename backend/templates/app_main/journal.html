@@ -67,6 +67,7 @@
             <th>Exit Price</th>
             <th>Win</th>
             <th>PnL</th>
+            <th>Attachments</th> <!-- Dodajemy kolumnę na załączniki -->
             <th>Actions</th>
         </tr>
     </thead>
@@ -121,7 +122,26 @@
             data-win-amount="{{ entry.calculated_win_amount|floatformat:2 }}">
             {{ entry.pnl|floatformat:2 }}
             </td>           
-
+            <td>
+                <!-- Wyświetlenie listy załączników -->
+                <ul>
+                    {% for attachment in entry.attachments.all %}
+                        <li>
+                            <a href="{{ attachment.file.url }}" download>{{ attachment.file.name }}</a>
+                        </li>
+                    {% empty %}
+                        <li>No attachments</li>
+                    {% endfor %}
+                </ul>
+            
+                <!-- Formularz do dodania nowego załącznika -->
+                <form method="POST" enctype="multipart/form-data" action="{% url 'upload_attachment_to_journal_entry' entry.id %}">
+                    {% csrf_token %}
+                    <input type="file" name="attachment" required>
+                    <button type="submit">Upload</button>
+                </form>
+            </td>
+            
             <td>
                 <button class="delete-entry-button" data-entry-id="{{ entry.id }}">Delete</button>
             </td>

@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User  # Import modelu User
+from django.core.exceptions import ValidationError
 
 class Currency(models.Model):
     name = models.CharField(max_length=100)  # Nazwa waluty, np. dolar amerykański
@@ -66,6 +67,13 @@ class Strategy(models.Model):
 class Attachment(models.Model):
     strategy = models.ForeignKey(Strategy, related_name='attachments', on_delete=models.CASCADE)
     file = models.FileField(upload_to='attachments/')
+
+    def __str__(self):
+        return self.file.name
+    
+class JournalEntryAttachment(models.Model):
+    journal_entry = models.ForeignKey(JournalEntry, related_name='attachments', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='journal_entry_attachments/')
 
     def __str__(self):
         return self.file.name
