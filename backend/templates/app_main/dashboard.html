@@ -1,99 +1,166 @@
 {% load static %}
-<div>
-    <h2>Welcome, {{ username }}!</h2>
-    <form action="{% url 'logout' %}" method="post">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Dashboard</title>
+    <!-- Link do Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link do pliku CSS -->
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+
+<body>
+    <!-- Nawigacja -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Trade Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="open_journal_button">Open Journal</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="open_strategies_button">My Strategies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'reports' %}">Go to Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{% url 'logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+ <div class="container mt-5">
+    <h3 class="text-center mb-4">Trade Calculator</h3>
+    <form method="POST" id="calculatorForm">
         {% csrf_token %}
-        <button type="submit">Logout</button>
+
+        <table class="table table-bordered table-striped">
+            <tbody>
+                <tr>
+                    <td><label for="currency">Currency:</label></td>
+                    <td>
+                        <select id="currency" name="currency" class="form-select">
+                            {% for currency in currencies %}
+                            <option value="{{ currency.code }}">{{ currency.code }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="deposit">Main Deposit:</label></td>
+                    <td><input type="number" step="any" id="deposit" name="deposit" class="form-control" required></td>
+                </tr>
+                <!-- Risk per trade i Risk Unit w jednej linii -->
+                <tr>
+                    <td><label for="risk">Risk per trade:</label></td>
+                    <td>
+                        <div class="d-flex">
+                            <input type="number" step="any" id="risk" name="risk" class="form-control me-2" required>
+                            <select id="risk_type" name="risk_type" class="form-select">
+                                <option value="percent">%</option>
+                                <option value="currency" id="currency_option"></option>
+                            </select>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Position Size i Position Unit w jednej linii -->
+                <tr>
+                    <td><label for="position">Position Size:</label></td>
+                    <td>
+                        <div class="d-flex">
+                            <input type="number" step="any" id="position" name="position" class="form-control me-2" required>
+                            <select id="position_type" name="position_type" class="form-select">
+                                <option value="percent">%</option>
+                                <option value="currency" id="position_currency_option"></option>
+                            </select>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="pair">Currency Pair:</label></td>
+                    <td><input type="text" id="pair" name="pair" list="pairs" class="form-control" required>
+                        <datalist id="pairs">
+                            {% for pair in pairs %}
+                            <option value="{{ pair.name }}">
+                            {% endfor %}
+                        </datalist>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="trade_type">Trade Type:</label></td>
+                    <td>
+                        <select id="trade_type" name="trade_type" class="form-select" required>
+                            <option value="long">Long</option>
+                            <option value="short">Short</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="entry">Entry Price:</label></td>
+                    <td><input type="number" step="0.0001" id="entry" name="entry" class="form-control" required></td>
+                </tr>
+                <tr>
+                    <td><label for="stop_loss">Stop Loss Price:</label></td>
+                    <td><input type="number" step="any" id="stop_loss" name="stop_loss" class="form-control" required></td>
+                </tr>
+                <tr>
+                    <td><label for="fee">Exchange Fee (%):</label></td>
+                    <td><input type="number" step="0.0001" id="fee" name="fee" class="form-control" required></td>
+                </tr>
+                <!-- Target Mode (radio buttons) -->
+                <tr>
+                    <td><label>Target Mode:</label></td>
+                    <td>
+                        <label>
+                            <input type="radio" name="target_mode" value="r" id="choose_ratio"> Choose Risk Ratio
+                        </label><br>
+                        <label>
+                            <input type="radio" name="target_mode" value="custom_price" id="enter_exit_price"> Enter Exit Price
+                        </label>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Target selection field -->
+        <div id="target_choice_wrapper" style="display:none;">
+            <label for="target_choice">Choose Target:</label>
+            <select id="target_choice" name="target_choice" required class="form-select">
+                <option value="1R">1R</option>
+                <option value="2R">2R</option>
+                <option value="3R">3R</option>
+            </select>
+        </div>
+
+        <!-- Custom exit price field, hidden by default -->
+        <div id="custom_price_input" style="display:none;">
+            <label for="custom_exit_price">Exit Price:</label>
+            <input type="number" step="any" id="custom_exit_price" name="custom_exit_price" class="form-control">
+        </div>
+
+        <!-- Przyciski na dole formularza -->
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg" style="background-color: #343a40; border-color: #343a40;">Calculate</button>
+            <button type="button" id="reset_button" class="btn btn-secondary btn-lg" style="background-color: #6c757d; border-color: #6c757d;">Start a New Project</button>
+        </div>
     </form>
 </div>
 
-<button type="button" id="open_journal_button">Open Journal</button>
-<button type="button" id="open_strategies_button">My Strategies</button>
 
-<a href="{% url 'reports' %}">
-    <button type="button">Go to Reports</button>
-</a>
-
-<form method="POST" id="calculatorForm">
-    {% csrf_token %}
-
-    <label for="currency">Currency:</label>
-    <select id="currency" name="currency">
-        {% for currency in currencies %}
-        <option value="{{ currency.code }}">{{ currency.code }}</option>
-        {% endfor %}
-    </select>
-
-    <label for="deposit">Main Deposit:</label>
-    <input type="number" step="any" id="deposit" name="deposit" required>
-
-    <label for="risk">Risk per trade:</label>
-    <input type="number" step="any" id="risk" name="risk" required>
-
-    <label for="risk_type">Risk Unit:</label>
-    <select id="risk_type" name="risk_type">
-        <option value="percent">%</option>
-        <option value="currency" id="currency_option"></option>
-    </select>
-
-    <label for="position">Position Size:</label>
-    <input type="number" step="any" id="position" name="position" required>
-
-    <label for="position_type">Position Unit:</label>
-    <select id="position_type" name="position_type">
-        <option value="percent">%</option>
-        <option value="currency" id="position_currency_option"></option>
-    </select>
-
-    <label for="pair">Currency Pair:</label>
-    <input type="text" id="pair" name="pair" required list="pairs">
-    <datalist id="pairs">
-        {% for pair in pairs %}
-        <option value="{{ pair.name }}">
-        {% endfor %}
-    </datalist>
-
-    <label for="trade_type">Trade Type:</label>
-    <select id="trade_type" name="trade_type" required>
-        <option value="long">Long</option>
-        <option value="short">Short</option>
-    </select>
-
-    <label for="entry">Entry Price:</label>
-    <input type="number" step="0.0001" id="entry" name="entry" required>
-
-    <label for="stop_loss">Stop Loss Price:</label>
-    <input type="number" step="any" id="stop_loss" name="stop_loss" required>
-
-    <label for="fee">Exchange Fee (%):</label>
-    <input type="number" step="0.0001" id="fee" name="fee" required>
-
-    <label>
-        <input type="radio" name="target_mode" value="r"> Choose Risk Ratio 
-    </label>
-    <label>
-        <input type="radio" name="target_mode" value="custom_price"> Enter Exit Price
-    </label>
-
-    <!-- Target selection field -->
-    <div id="target_choice_wrapper">
-        <label for="target_choice">Choose Target:</label>
-        <select id="target_choice" name="target_choice" required>
-            <option value="1R">1R</option>
-            <option value="2R">2R</option>
-            <option value="3R">3R</option>
-        </select>
-    </div>
-
-    <!-- Custom exit price field, hidden by default -->
-    <div id="custom_price_input" style="display:none;">
-        <label for="custom_exit_price">Exit Price:</label>
-        <input type="number" step="any" id="custom_exit_price" name="custom_exit_price">
-    </div>
-
-    <button type="submit">Calculate</button>
-    <button type="button" id="reset_button">Start a New Project</button>
-</form>
 
 <!-- Results -->
 <div id="results" style="display: none;">

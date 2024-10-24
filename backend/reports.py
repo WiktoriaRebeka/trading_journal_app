@@ -272,6 +272,9 @@ def winrate_by_strategy_view(request):
         # Pobranie strategii od użytkownika
         strategy_name = request.GET.get('strategy')
 
+        if not strategy_name:
+            return JsonResponse({'error': 'No strategy provided'}, status=400)  # Zwracamy 400, jeśli brak strategii
+
         # Filtrowanie wpisów dziennika na podstawie strategii
         journal_entries = JournalEntry.objects.filter(user=request.user, strategy__name=strategy_name)
 
