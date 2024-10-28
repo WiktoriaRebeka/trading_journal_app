@@ -49,51 +49,57 @@
 <div class="container mt-5">
     <h3 class="text-center mb-4">Trade Journal</h3>
 
-    <!-- Przycisk dodania nowego wpisu -->
-    <div class="text-center mb-4">
-        <button id="create-entry-button" class="btn btn-primary">Add an Entry</button>
-    </div>
+   <!-- Sekcja przycisków: Add an Entry i Filter -->
+   <div class="d-flex justify-content-start mb-4">
+    <button id="create-entry-button" class="btn custom-entry-button me-2">Add an Entry</button>
 
-    <!-- Formularz filtrowania -->
-    <form method="GET" action="{% url 'journal' %}" class="row mb-4">
-        <div class="col-md-3">
-            <label for="pair_filter" class="form-label">Currency Pair:</label>
-            <select name="pair_filter" id="pair_filter" class="form-select">
-                <option value="">All</option>
-                {% for pair in pairs %}
-                    <option value="{{ pair.name }}" {% if request.GET.pair_filter == pair.name %}selected{% endif %}>{{ pair.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="trade_type_filter" class="form-label">Trade Type:</label>
-            <select name="trade_type_filter" id="trade_type_filter" class="form-select">
-                <option value="">All</option>
-                <option value="long" {% if request.GET.trade_type_filter == 'long' %}selected{% endif %}>Long</option>
-                <option value="short" {% if request.GET.trade_type_filter == 'short' %}selected{% endif %}>Short</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="target_filter" class="form-label">Chosen Target:</label>
-            <select name="target_filter" id="target_filter" class="form-select">
-                <option value="">All</option>
-                <option value="1R" {% if request.GET.target_filter == '1R' %}selected{% endif %}>1R</option>
-                <option value="2R" {% if request.GET.target_filter == '2R' %}selected{% endif %}>2R</option>
-                <option value="3R" {% if request.GET.target_filter == '3R' %}selected{% endif %}>3R</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="win_filter" class="form-label">Win:</label>
-            <select name="win_filter" id="win_filter" class="form-select">
-                <option value="">All</option>
-                <option value="YES" {% if request.GET.win_filter == 'YES' %}selected{% endif %}>YES</option>
-                <option value="NO" {% if request.GET.win_filter == 'NO' %}selected{% endif %}>NO</option>
-            </select>
-        </div>
-        <div class="col-12 text-center mt-3">
-            <button type="submit" class="btn btn-dark">Filter</button>
-        </div>
-    </form>
+    <button type="submit" form="filter-form" class="btn btn-dark">Filter</button>
+</div>
+
+<!-- Formularz filtrowania -->
+<form method="GET" action="{% url 'journal' %}" id="filter-form" class="row mb-4">
+    <div class="col-md-3">
+        <label for="pair_filter" class="form-label">Currency Pair:</label>
+        <select name="pair_filter" id="pair_filter" class="form-select">
+            <option value="" {% if selected_pair == "" %}selected{% endif %}>All</option>
+            {% for pair in pairs %}
+                <option value="{{ pair.name }}" {% if selected_pair == pair.name %}selected{% endif %}>
+                    {{ pair.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="trade_type_filter" class="form-label">Trade Type:</label>
+        <select name="trade_type_filter" id="trade_type_filter" class="form-select">
+            <option value="" {% if selected_trade_type == "" %}selected{% endif %}>All</option>
+            <option value="long" {% if selected_trade_type == "long" %}selected{% endif %}>Long</option>
+            <option value="short" {% if selected_trade_type == "short" %}selected{% endif %}>Short</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="strategy_filter" class="form-label">Strategy:</label>
+        <select name="strategy_filter" id="strategy_filter" class="form-select">
+            <option value="" {% if selected_strategy == "" %}selected{% endif %}>All</option>
+            {% for strategy in strategies %}
+                <option value="{{ strategy.id }}" {% if selected_strategy == strategy.id|stringformat:"s" %}selected{% endif %}>
+                    {{ strategy.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="win_filter" class="form-label">Win:</label>
+        <select name="win_filter" id="win_filter" class="form-select">
+            <option value="" {% if selected_win == "" %}selected{% endif %}>All</option>
+            <option value="YES" {% if selected_win == "YES" %}selected{% endif %}>YES</option>
+            <option value="NO" {% if selected_win == "NO" %}selected{% endif %}>NO</option>
+        </select>
+    </div>
+</form>
+
+    
+    
 
     <!-- Kontener dla tabeli z przewijaniem -->
     <div class="table-container position-relative">
@@ -110,14 +116,14 @@
                         <th>Exit Date</th>
                         <th>Currency</th>
                         <th>Strategy</th>
-                        <th>Deposit</th>
-                        <th>Risk</th>
+                        <th>Deposit Size</th>
+                        <th>Risk Size</th>
                         <th>Position Size</th>
                         <th>Leverage</th>
                         <th>Currency Pair</th>
                         <th>Trade Type</th>
                         <th>Entry Price</th>
-                        <th>Stop Loss</th>
+                        <th>Stop Loss Price</th>
                         <th>Risk Reward Ratio</th>
                         <th>Exit Price</th>
                         <th>Win</th>

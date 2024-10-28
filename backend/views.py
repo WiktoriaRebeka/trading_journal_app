@@ -129,29 +129,20 @@ def save_pair(request):
         return JsonResponse({'success': False, 'message': 'Niewłaściwa metoda HTTP'})
 
 
+
 @login_required
 def journal_view(request):
     # Pobieramy wszystkie wpisy użytkownika
     journal_entries = JournalEntry.objects.filter(user=request.user)
-
-    # Najpierw sortujemy według braku `entry_date` (brak daty na górze), a potem malejąco po `entry_date`
-    journal_entries = journal_entries.annotate(
-        no_entry_date=Case(
-            When(entry_date__isnull=True, then=1),
-            default=0,
-            output_field=IntegerField()
-        )
-    ).order_by('-no_entry_date', '-entry_date')
-
-    # Pobieramy dostępne pary do filtrowania
+    
+    # Pobieramy dostępne pary i strategie do filtrowania
     pairs = Pair.objects.all()
-
     strategies = Strategy.objects.filter(user=request.user)
 
     # Pobieranie filtrów z GET requestu
     pair_filter = request.GET.get('pair_filter')
     trade_type_filter = request.GET.get('trade_type_filter')
-    target_filter = request.GET.get('target_filter')
+    strategy_filter = request.GET.get('strategy_filter')
     win_filter = request.GET.get('win_filter')
 
     # Filtrowanie danych na podstawie przekazanych filtrów
@@ -159,16 +150,20 @@ def journal_view(request):
         journal_entries = journal_entries.filter(pair=pair_filter)
     if trade_type_filter:
         journal_entries = journal_entries.filter(trade_type=trade_type_filter)
-    if target_filter:
-        journal_entries = journal_entries.filter(target_choice=target_filter)
+    if strategy_filter:
+        journal_entries = journal_entries.filter(strategy__id=strategy_filter)
     if win_filter:
         journal_entries = journal_entries.filter(win=win_filter)
 
-    # Renderowanie strony z przefiltrowanymi wpisami oraz dostępne pary
+    # Przekazanie wybranych wartości filtrów do szablonu
     return render(request, 'app_main/journal.html', {
         'journal_entries': journal_entries,
         'pairs': pairs,
-        'strategies': strategies,  # Przekazujemy strategie
+        'strategies': strategies,
+        'selected_pair': pair_filter,          # Przekazujemy wybrany filtr pary walutowej
+        'selected_trade_type': trade_type_filter,  # Przekazujemy wybrany filtr typu transakcji
+        'selected_strategy': strategy_filter,   # Przekazujemy wybrany filtr strategii
+        'selected_win': win_filter              # Przekazujemy wybrany filtr wyniku
     })
 
 @csrf_exempt
