@@ -48,7 +48,8 @@
     <form method="POST" id="calculatorForm">
         {% csrf_token %}
 
-        <table class="table table-bordered table-striped">
+        <!-- Użycie klasy table-sm dla mniejszej tabeli -->
+        <table class="table table-bordered table-striped table-hover table-sm">
             <tbody>
                 <tr>
                     <td><label for="currency">Currency:</label></td>
@@ -125,11 +126,11 @@
                 <tr>
                     <td><label>Target Mode:</label></td>
                     <td>
-                        <label>
-                            <input type="radio" name="target_mode" value="r" id="choose_ratio"> Choose Risk Ratio
-                        </label><br>
-                        <label>
-                            <input type="radio" name="target_mode" value="custom_price" id="enter_exit_price"> Enter Exit Price
+                        <label class="form-check-label me-3">
+                            <input class="form-check-input" type="radio" name="target_mode" value="r" id="choose_ratio"> Choose Risk Ratio
+                        </label>
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="target_mode" value="custom_price" id="enter_exit_price"> Enter Exit Price
                         </label>
                     </td>
                 </tr>
@@ -137,9 +138,9 @@
         </table>
 
         <!-- Target selection field -->
-        <div id="target_choice_wrapper" style="display:none;">
+        <div id="target_choice_wrapper" class="mb-3" style="display:none;">
             <label for="target_choice">Choose Target:</label>
-            <select id="target_choice" name="target_choice" required class="form-select">
+            <select id="target_choice" name="target_choice" class="form-select">
                 <option value="1R">1R</option>
                 <option value="2R">2R</option>
                 <option value="3R">3R</option>
@@ -147,18 +148,19 @@
         </div>
 
         <!-- Custom exit price field, hidden by default -->
-        <div id="custom_price_input" style="display:none;">
+        <div id="custom_price_input" class="mb-3" style="display:none;">
             <label for="custom_exit_price">Exit Price:</label>
             <input type="number" step="any" id="custom_exit_price" name="custom_exit_price" class="form-control">
         </div>
 
         <!-- Przyciski na dole formularza -->
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-calculate btn-lg">Calculate</button>
+        <div class="text-center mt-4 d-flex justify-content-center">
+            <button type="submit" class="btn btn-dark btn-lg me-3">Calculate</button>
             <button type="button" id="reset_button" class="btn btn-secondary btn-lg">Start a New Project</button>
         </div>
     </form>
 </div>
+
 
 
 <!-- Results -->
@@ -179,17 +181,17 @@
             </thead>
             <tbody>
                 <tr>
-                    <td id="leverage" rowspan="2"><span id="leverage_value"></span></td>
-                    <td id="chosenTarget" rowspan="2"></td>
-                    <td id="chosenTargetPrice" rowspan="2"></td>
-                    <td id="corrected_position_size"></td><!-- Pierwsza wartość dla Position Size -->
-                    <td id="riskAmountTable"></td> <!-- Pierwsza wartość dla Risk Amount -->
-                    <td id="predicted_win"></td> <!-- Pierwsza wartość dla Predicted Profit -->
+                    <td id="leverage" class="text-center align-middle" rowspan="2"><span id="leverage_value"></span></td>
+                    <td id="chosenTarget" class="text-center align-middle" rowspan="2"></td>
+                    <td id="chosenTargetPrice" class="text-center align-middle" rowspan="2"></td>
+                    <td id="corrected_position_size" class="text-center"></td><!-- Pierwsza wartość dla Position Size -->
+                    <td id="riskAmountTable" class="text-center"></td> <!-- Pierwsza wartość dla Risk Amount -->
+                    <td id="predicted_win" class="text-center"></td> <!-- Pierwsza wartość dla Predicted Profit -->
                 </tr>
                 <tr>
-                    <td id="positionAmountTable"></td>
-                    <td id="corrected_risk_amount"></td> <!-- Druga wartość dla Risk Amount -->
-                    <td id="predicted_calculated_win"></td> <!-- Druga wartość dla Predicted Profit -->
+                    <td id="positionAmountTable" class="text-center"></td>
+                    <td id="corrected_risk_amount" class="text-center"></td> <!-- Druga wartość dla Risk Amount -->
+                    <td id="predicted_calculated_win" class="text-center"></td> <!-- Druga wartość dla Predicted Profit -->
                 </tr>
             </tbody>
         </table>
@@ -198,9 +200,9 @@
 
     <button type="button" id="add_to_journal_button" class="btn btn-dark btn-lg mt-3">Add to Journal</button>
 
-    <p class="mt-3">* The leverage has been rounded down to a lower value to reduce the risk of an unexpected margin call. This adjustment affects the final position size and overall risk, but provides additional protection against margin calls.</p>
-    <p class="mt-3">If you wish to select a higher leverage or choose a different leverage value, please click below.</p>
-    <p class="mt-3"><strong>Important: </strong>Please note that selecting a higher leverage increases the risk of a margin call, as even small market movements can significantly impact your position.</p>
+    <p class="mt-3">* The leverage has been rounded down to a lower value to reduce the risk of an unexpected margin call. This adjustment affects either the risk or the position size: maintaining a fixed risk increases position size, while keeping a fixed position size adjusts the risk and potential profit.</p>
+    <p class="mt-3">If the calculated leverage is too high and unavailable for your selected pair, please choose the maximum available leverage by clicking below.</p>
+    <p class="mt-3"><strong>Important: </strong>The calculated leverage is the maximum leverage that allows you to avoid a margin call. Selecting a higher leverage may result in a margin call.</p>
 
     <button type="button" id="calculate_max_leverage_button" class="btn btn-dark btn-lg mt-3" style="display: none;">Choose Max Leverage</button>
 </div>
@@ -209,11 +211,11 @@
     <!-- Max leverage selection -->
     <label for="leverage_choice" id="leverage_label" style="display: none;">Choose Leverage:</label>
     <select id="leverage_choice" name="leverage_choice" class="form-select w-auto mx-auto mb-4" style="display: none;">
-        <option value="100">100x</option>
-        <option value="75">75x</option>
-        <option value="50">50x</option>
-        <option value="25">25x</option>
-        <option value="20">20x</option>
+        <option value="100">100 x</option>
+        <option value="75">75 x</option>
+        <option value="50">50 x</option>
+        <option value="25">25 x</option>
+        <option value="20">20 x</option>
     </select>
 
     <!-- Result displayed only after leverage is selected -->
@@ -233,7 +235,7 @@
     
 
     <!-- Add to Journal Button -->
-    <button type="button" id="add_to_journal_max_leverage_button" class="btn btn-dark btn-lg mt-3" style="display: none;">Add to Journal (Max Leverage)</button>
+    <button type="button" id="add_to_journal_max_leverage_button" class="btn btn-dark btn-lg mt-3" style="display: none;">Add to Journal</button>
 </div>
 
 <div id="error_message" style="color: red;"></div>
