@@ -139,7 +139,6 @@ def journal_view(request):
     # Pobieramy wszystkie wpisy użytkownika
     journal_entries = JournalEntry.objects.filter(user=request.user)
     
-
     # Pobieramy dostępne pary i strategie do filtrowania
     pairs = Pair.objects.all()
     strategies = Strategy.objects.filter(user=request.user)
@@ -164,9 +163,23 @@ def journal_view(request):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         data = {
             'journal_entries': list(journal_entries.values(
-                'id', 'entry_date', 'exit_date', 'currency', 'strategy__name', 'deposit',
-                'calculated_risk_amount', 'calculated_position', 'calculated_leverage',
-                'pair', 'trade_type', 'entry_price', 'stop_loss', 'win', 'pnl'
+                'id', 
+                'entry_date', 
+                'exit_date', 
+                'currency', 
+                'strategy__name', 
+                'deposit',
+                'calculated_risk_amount', 
+                'calculated_position', 
+                'calculated_leverage',
+                'pair', 
+                'trade_type', 
+                'entry_price', 
+                'stop_loss', 
+                'win', 
+                'pnl',
+                'target_choice',  # Pole Risk Reward Ratio
+                'target_price'
             ))
         }
         return JsonResponse(data)
@@ -176,11 +189,12 @@ def journal_view(request):
         'journal_entries': journal_entries,
         'pairs': pairs,
         'strategies': strategies,
-        'selected_pair': pair_filter,          # Przekazujemy wybrany filtr pary walutowej
-        'selected_trade_type': trade_type_filter,  # Przekazujemy wybrany filtr typu transakcji
-        'selected_strategy': strategy_filter,   # Przekazujemy wybrany filtr strategii
-        'selected_win': win_filter              # Przekazujemy wybrany filtr wyniku
+        'selected_pair': pair_filter,          
+        'selected_trade_type': trade_type_filter,
+        'selected_strategy': strategy_filter,
+        'selected_win': win_filter
     })
+
 
 
 @csrf_exempt
