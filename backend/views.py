@@ -129,12 +129,17 @@ def save_pair(request):
         return JsonResponse({'success': False, 'message': 'Niewłaściwa metoda HTTP'})
 
 
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import JournalEntry, Pair, Strategy
 
 @login_required
 def journal_view(request):
     # Pobieramy wszystkie wpisy użytkownika
     journal_entries = JournalEntry.objects.filter(user=request.user)
     
+
     # Pobieramy dostępne pary i strategie do filtrowania
     pairs = Pair.objects.all()
     strategies = Strategy.objects.filter(user=request.user)
@@ -155,7 +160,18 @@ def journal_view(request):
     if win_filter:
         journal_entries = journal_entries.filter(win=win_filter)
 
-    # Przekazanie wybranych wartości filtrów do szablonu
+    # Jeśli jest to żądanie AJAX, zwracamy dane w formacie JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        data = {
+            'journal_entries': list(journal_entries.values(
+                'id', 'entry_date', 'exit_date', 'currency', 'strategy__name', 'deposit',
+                'calculated_risk_amount', 'calculated_position', 'calculated_leverage',
+                'pair', 'trade_type', 'entry_price', 'stop_loss', 'win', 'pnl'
+            ))
+        }
+        return JsonResponse(data)
+
+    # W przypadku normalnego żądania HTTP zwracamy stronę HTML
     return render(request, 'app_main/journal.html', {
         'journal_entries': journal_entries,
         'pairs': pairs,
@@ -165,6 +181,7 @@ def journal_view(request):
         'selected_strategy': strategy_filter,   # Przekazujemy wybrany filtr strategii
         'selected_win': win_filter              # Przekazujemy wybrany filtr wyniku
     })
+
 
 @csrf_exempt
 def add_to_journal(request):
