@@ -13,38 +13,7 @@
 <body>
 
 <!-- Nawigacja -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">Back to Dashboard</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="open_journal_button">Open Journal</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="open_strategies_button">My Strategies</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'reports' %}">Go to Reports</a>
-                </li>
-                <li class="nav-item">
-                    <form action="{% url 'logout' %}" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
+{% include 'navigation.html' %}
 <!-- Główna zawartość strony -->
 <div class="container mt-5">
     <h3 class="text-center mb-4">Trade Journal</h3>
@@ -219,6 +188,7 @@
 <script type="module" src="{% static 'js/journal_data.js' %}"></script>
 <script type="module" src="{% static 'js/addNewEntry.js' %}"></script>
 <script src="{% static 'js/journal_style.js' %}"></script>
+<script type="module" src="{% static 'js/dashboard.js' %}"></script>
 
 </body>
 </html>
