@@ -115,94 +115,59 @@
             </div>
         </div>
 
-<!-- Filtry i wykresy dla wybranych dat -->
-<!-- Filtry i wykresy dla wybranych dat -->
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h3 class="mb-3">Filter WinRate by Date Range</h3>
-                    <form id="date-filter-form" method="GET" action="{% url 'reports' %}">
-                        <div class="mb-3">
-                            <label for="start_date" class="form-label">Start Date:</label>
-                            <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label for="end_date" class="form-label">End Date:</label>
-                            <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="form-control">
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Filter</button>
-                    </form>
-                    <div class="mt-4">
-                        <h4 class="chart-title filtered-pie hidden">Filtered WinRate Pie Chart</h4>
-                        <div id="pie-chart-filtered" class="chart-container hidden">{{ pie_chart_filtered_html|safe }}</div>
-                    </div>
-                    <div class="mt-4">
-                        <h4 class="chart-title filtered-bar hidden">Filtered Daily PnL Bar Chart</h4>
-                        <div id="bar-chart-filtered" class="chart-container hidden">{{ bar_chart_filtered_pnl_html|safe }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+<!-- Sekcja filtrowania po dacie (pełna szerokość w rzędzie) -->
+<div class="filter-section">
+    <div class="filter-card">
+        <h3>Filter WinRate by Date Range</h3>
+        <form id="date-filter-form" method="GET" action="{% url 'reports' %}">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="date-input">
+            
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="date-input">
+
+            <button type="submit" class="filter-button">Filter</button>
+        </form>
+        <h4 class="chart-title filtered-pie hidden">Filtered WinRate Pie Chart</h4>
+        <div id="pie-chart-filtered" class="chart-container hidden">{{ pie_chart_filtered_html|safe }}</div>
+        <h4 class="chart-title filtered-bar hidden">Filtered Daily PnL Bar Chart</h4>
+        <div id="bar-chart-filtered" class="chart-container hidden">{{ bar_chart_filtered_pnl_html|safe }}</div>
     </div>
 </div>
 
-<!-- Wykres dla pary walutowej -->
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h3 class="mb-3">WinRate by Currency Pair</h3>
-                    <form id="pair-form">
-                        <div class="mb-3">
-                            <label for="pair" class="form-label">Choose Currency Pair:</label>
-                            <input type="text" id="pair" name="pair" list="pairs" required class="form-control">
-                            <datalist id="pairs">
-                                {% for pair in pairs %}
-                                <option value="{{ pair.name }}">
-                                {% endfor %}
-                            </datalist>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Show WinRate</button>
-                    </form>
-                    <div class="mt-4">
-                        <h4 class="chart-title pair hidden">Win vs Lose for Selected Pair</h4>
-                        <div id="pie-chart-pairs" class="chart-container hidden">{{ pie_chart_pairs_html|safe }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- Sekcja z parami walutowymi i strategiami (dwa elementy obok siebie) -->
+<div class="row-sections">
+    <div class="pair-section">
+        <h3>WinRate by Currency Pair</h3>
+        <form id="pair-form">
+            <label for="pair">Choose Currency Pair:</label>
+            <input type="text" id="pair" name="pair" list="pairs" required class="text-input">
+            <datalist id="pairs">
+                {% for pair in pairs %}
+                <option value="{{ pair.name }}">
+                {% endfor %}
+            </datalist>
+            <button type="submit" class="filter-button">Show WinRate</button>
+        </form>
+        <h4 class="chart-title pair hidden">Win vs Lose for Selected Pair</h4>
+        <div id="pie-chart-pairs" class="chart-container hidden">{{ pie_chart_pairs_html|safe }}</div>
     </div>
-</div>
 
-<!-- Wykres dla strategii -->
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h3 class="mb-3">WinRate by Strategy</h3>
-                    <form id="strategy-form">
-                        <div class="mb-3">
-                            <label for="strategy" class="form-label">Choose Strategy:</label>
-                            <input type="text" id="strategy" name="strategy" list="strategies" required class="form-control">
-                            <datalist id="strategies">
-                                {% for strategy in strategies %}
-                                <option value="{{ strategy.name }}">
-                                {% endfor %}
-                            </datalist>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Show WinRate</button>
-                    </form>
-                    <div class="mt-4">
-                        <h4 class="chart-title strategy hidden">Win vs Lose for Selected Strategy</h4>
-                        <div id="pie-chart-strategies" class="chart-container hidden">{{ pie_chart_strategy_html|safe }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="strategy-section">
+        <h3>WinRate by Strategy</h3>
+        <form id="strategy-form">
+            <label for="strategy">Choose Strategy:</label>
+            <input type="text" id="strategy" name="strategy" list="strategies" required class="text-input">
+            <datalist id="strategies">
+                {% for strategy in strategies %}
+                <option value="{{ strategy.name }}">
+                {% endfor %}
+            </datalist>
+            <button type="submit" class="filter-button">Show WinRate</button>
+        </form>
+        <h4 class="chart-title strategy hidden">Win vs Lose for Selected Strategy</h4>
+        <div id="pie-chart-strategies" class="chart-container hidden">{{ pie_chart_strategy_html|safe }}</div>
     </div>
 </div>
 

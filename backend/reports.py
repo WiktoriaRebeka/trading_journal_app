@@ -199,6 +199,9 @@ def filter_reports_view(request):
     dates = [entry['entry_date__date'].strftime('%Y-%m-%d') for entry in pnl_entries]
     pnl_values = [entry['daily_pnl'] for entry in pnl_entries]
 
+    if not dates or not pnl_values:
+        logger.warning("No data available for bar chart (dates or pnl_values are missing).")
+
     bar_fig = go.Figure(data=[go.Bar(x=dates, y=pnl_values, marker_color=['green' if x >= 0 else 'red' for x in pnl_values])])
     bar_fig.update_layout(
         title=f"Daily PnL from {start_date_str} to {end_date_str}",
@@ -212,8 +215,10 @@ def filter_reports_view(request):
 
     # Zwracamy oba wykresy w odpowiedzi JSON
     return JsonResponse({
-        'pie_chart_html': pie_chart_html,
-        'bar_chart_html': bar_chart_html
+        'pie_chart_values': [report_data['yes_count'], report_data['no_count']],
+        'pie_chart_labels': ['Win', 'Lose'],
+        'bar_chart_dates': dates,
+        'bar_chart_values': pnl_values
     })
 
 
@@ -247,14 +252,10 @@ def winrate_by_currency_pair_view(request):
 
         logger.info(f"Total trades: {total_trades}, Win trades: {win_trades}, Win rate: {win_rate}%")
 
-        # Tworzenie wykresu kołowego (pie chart) dla wybranej pary walutowej
-        pie_fig = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], values=[win_trades, total_trades - win_trades])])
-        pie_fig.update_layout(title=f"Win vs Lose for {pair}")
-        pie_chart_html = pie_fig.to_html(full_html=False)
-
-        # Zwracamy wynik w formacie JSON
+        # Zwracamy wartości i etykiety dla wykresu kołowego
         return JsonResponse({
-            'pie_chart_pair_html': pie_chart_html,  # Wykres kołowy dla pary walutowej
+            'pie_chart_values': [win_trades, total_trades - win_trades],
+            'pie_chart_labels': ['Win', 'Lose'],
             'pair': pair,
             'total_trades': total_trades,
             'win_trades': win_trades,
@@ -265,7 +266,6 @@ def winrate_by_currency_pair_view(request):
         logger.error(f"Error processing WinRate for pair {pair}: {e}")
         return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
 
-
 @login_required
 def winrate_by_strategy_view(request):
     try:
@@ -273,7 +273,7 @@ def winrate_by_strategy_view(request):
         strategy_name = request.GET.get('strategy')
 
         if not strategy_name:
-            return JsonResponse({'error': 'No strategy provided'}, status=400)  # Zwracamy 400, jeśli brak strategii
+            return JsonResponse({'error': 'No strategy provided'}, status=400)
 
         # Filtrowanie wpisów dziennika na podstawie strategii
         journal_entries = JournalEntry.objects.filter(user=request.user, strategy__name=strategy_name)
@@ -291,14 +291,10 @@ def winrate_by_strategy_view(request):
         win_trades = winrate_data['win_trades']
         win_rate = (win_trades * 100.0 / total_trades) if total_trades > 0 else 0
 
-        # Tworzenie wykresu kołowego (pie chart) dla strategii
-        pie_fig = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], values=[win_trades, total_trades - win_trades])])
-        pie_fig.update_layout(title=f"Win vs Lose for {strategy_name}")
-        pie_chart_html = pie_fig.to_html(full_html=False)
-
-        # Zwracamy wynik do szablonu
+        # Zwracamy wartości i etykiety dla wykresu kołowego
         return JsonResponse({
-            'pie_chart_strategy_html': pie_chart_html,  # Wykres kołowy dla strategii
+            'pie_chart_values': [win_trades, total_trades - win_trades],
+            'pie_chart_labels': ['Win', 'Lose'],
             'strategy': strategy_name,
             'total_trades': total_trades,
             'win_trades': win_trades,
