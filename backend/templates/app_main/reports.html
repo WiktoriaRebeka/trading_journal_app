@@ -55,70 +55,59 @@
     </div>
 
     <!-- Raporty w formacie grid -->
-    <div class="reports-grid row mt-5">
+    <!-- Raporty w formacie grid -->
+    <div class="reports-grid">
         <!-- Total Report -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="card-title">Total</h3>
-                    <p>Total trades: {{ total_report.total_trades }}</p>
-                    <p>Win trades: {{ total_report.yes_count }}</p>
-                    <p>Lose trades: {{ total_report.no_count }}</p>
-                    <p>Win Trades: {{ total_report.yes_count }}</p>
-                    <p>Lose Trades: {{ total_report.no_count }}</p>
-                    <p>WinRate: {{ total_report.win_rate }}%</p>
-                    <p>Avg. RRR: {{ total_report.avg_rrr }}</p>
-                    <p>Min. required WinRate: {{ total_report.min_win_rate }}%</p>
-                    <p>Is profitable: {{ total_report.is_profitable }}</p>
-                    <div class="chart-wrapper">
+        <div class="report-card">
+            <div class="card-header">Total</div>
+            <div class="card-body">
+                <p>Total trades: <span class="value">{{ total_report.total_trades }}</span></p>
+                <p>Win trades: <span class="value">{{ total_report.yes_count }}</span></p>
+                <p>Lose trades: <span class="value">{{ total_report.no_count }}</span></p>
+                <p>WinRate: <span class="value">{{ total_report.win_rate }}%</span></p>
+                <p>Avg. RRR: <span class="value">{{ total_report.avg_rrr }}</span></p>
+                <p>Min. required WinRate: <span class="value">{{ total_report.min_win_rate }}%</span></p>
+                <p>Is profitable: <span class="value">{{ total_report.is_profitable }}</span></p>
+                <div class="chart-wrapper">
                     <div id="pie-chart-total">{{ pie_chart_total_html|safe }}</div>
-                </div>
                 </div>
             </div>
         </div>
 
         <!-- Monthly Report -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="card-title">Last 30 Days</h3>
-                    <p>Total trades: {{ monthly_report.total_trades }}</p>
-                    <p>Win trades: {{ monthly_report.yes_count }}</p>
-                    <p>Lose trades:  {{ monthly_report.no_count }}</p>
-                    <p>Win Trades: {{ monthly_report.yes_count }}</p>
-                    <p>Lose Trades: {{ monthly_report.no_count }}</p>
-                    <p>WinRate: {{ monthly_report.win_rate }}%</p>
-                    <p>Avg. RRR: {{ monthly_report.avg_rrr }}</p>
-                    <p>Min. required WinRate: {{ monthly_report.min_win_rate }}%</p>
-                    <p>Is profitable: {{ monthly_report.is_profitable }}</p>
-                    <div class="chart-wrapper">
+        <div class="report-card">
+            <div class="card-header">Last 30 Days</div>
+            <div class="card-body">
+                <p>Total trades: <span class="value">{{ monthly_report.total_trades }}</span></p>
+                <p>Win trades: <span class="value">{{ monthly_report.yes_count }}</span></p>
+                <p>Lose trades: <span class="value">{{ monthly_report.no_count }}</span></p>
+                <p>WinRate: <span class="value">{{ monthly_report.win_rate }}%</span></p>
+                <p>Avg. RRR: <span class="value">{{ monthly_report.avg_rrr }}</span></p>
+                <p>Min. required WinRate: <span class="value">{{ monthly_report.min_win_rate }}%</span></p>
+                <p>Is profitable: <span class="value">{{ monthly_report.is_profitable }}</span></p>
+                <div class="chart-wrapper">
                     <div id="pie-chart-monthly">{{ pie_chart_monthly_html|safe }}</div>
-                </div>
                 </div>
             </div>
         </div>
 
         <!-- Daily Report -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="card-title">Today</h3>
-                    <p>Total trades: {{ daily_report.total_trades }}</p>
-                    <p>Win trades: {{ daily_report.yes_count }}</p>
-                    <p>Lose trades:  {{ daily_report.no_count }}</p>
-                    <p>Win Trades: {{ daily_report.yes_count }}</p>
-                    <p>Lose Trades: {{ daily_report.no_count }}</p>
-                    <p>WinRate: {{ daily_report.win_rate }}%</p>
-                    <p>Avg. RRR: {{ daily_report.avg_rrr }}</p>
-                    <p>Min. required WinRate: {{ daily_report.min_win_rate }}%</p>
-                    <p>Is profitable: {{ daily_report.is_profitable }}</p>
-                    <div class="chart-wrapper">
-                        <div id="pie-chart-daily">{{ pie_chart_daily_html|safe }}</div>
-                    </div>
-                    
+        <div class="report-card">
+            <div class="card-header">Today</div>
+            <div class="card-body">
+                <p>Total trades: <span class="value">{{ daily_report.total_trades }}</span></p>
+                <p>Win trades: <span class="value">{{ daily_report.yes_count }}</span></p>
+                <p>Lose trades: <span class="value">{{ daily_report.no_count }}</span></p>
+                <p>WinRate: <span class="value">{{ daily_report.win_rate }}%</span></p>
+                <p>Avg. RRR: <span class="value">{{ daily_report.avg_rrr }}</span></p>
+                <p>Min. required WinRate: <span class="value">{{ daily_report.min_win_rate }}%</span></p>
+                <p>Is profitable: <span class="value">{{ daily_report.is_profitable }}</span></p>
+                <div class="chart-wrapper">
+                    <div id="pie-chart-daily">{{ pie_chart_daily_html|safe }}</div>
                 </div>
             </div>
         </div>
+    </div>
 
 
 <!-- Sekcja filtrowania po dacie (pełna szerokość w rzędzie) -->
@@ -143,32 +132,36 @@
 
 <!-- Sekcja z parami walutowymi i strategiami (dwa elementy obok siebie) -->
 <div class="row-sections">
-    <div class="pair-section">
-        <h3>WinRate by Currency Pair</h3>
-        <form id="pair-form">
-            <label for="pair">Choose Currency Pair:</label>
-            <input type="text" id="pair" name="pair" list="pairs" required class="text-input">
-            <datalist id="pairs">
-                {% for pair in pairs %}
-                <option value="{{ pair.name }}">
-                {% endfor %}
-            </datalist>
+    <div class="section-card pair-section">
+        <h3 class="filter-title">WinRate by Currency Pair</h3>
+        <form id="pair-form" class="filter-form">
+            <div class="input-group">
+                <label for="pair">Choose Currency Pair:</label>
+                <input type="text" id="pair" name="pair" list="pairs" required class="text-input">
+                <datalist id="pairs">
+                    {% for pair in pairs %}
+                    <option value="{{ pair.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
             <button type="submit" class="filter-button">Show WinRate</button>
         </form>
         <h4 class="chart-title pair hidden">Win vs Lose for Selected Pair</h4>
         <div id="pie-chart-pairs" class="chart-container hidden">{{ pie_chart_pairs_html|safe }}</div>
     </div>
 
-    <div class="strategy-section">
-        <h3>WinRate by Strategy</h3>
-        <form id="strategy-form">
-            <label for="strategy">Choose Strategy:</label>
-            <input type="text" id="strategy" name="strategy" list="strategies" required class="text-input">
-            <datalist id="strategies">
-                {% for strategy in strategies %}
-                <option value="{{ strategy.name }}">
-                {% endfor %}
-            </datalist>
+    <div class="section-card strategy-section">
+        <h3 class="filter-title">WinRate by Strategy</h3>
+        <form id="strategy-form" class="filter-form">
+            <div class="input-group">
+                <label for="strategy">Choose Strategy:</label>
+                <input type="text" id="strategy" name="strategy" list="strategies" required class="text-input">
+                <datalist id="strategies">
+                    {% for strategy in strategies %}
+                    <option value="{{ strategy.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
             <button type="submit" class="filter-button">Show WinRate</button>
         </form>
         <h4 class="chart-title strategy hidden">Win vs Lose for Selected Strategy</h4>
