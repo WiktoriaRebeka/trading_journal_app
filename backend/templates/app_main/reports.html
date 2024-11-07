@@ -5,30 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WinRate Reports</title>
     {% load static %}
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Ładowanie Plotly -->
-    <link rel="stylesheet" type="text/css" href="{% static 'css/calendar.css' %}"> <!-- Dodaj link do pliku CSS -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/reports.css' %}">
+    <link rel="stylesheet" href="{% static 'css/calendar.css' %}">
 </head>
 <body>
-    <a href="{% url 'dashboard' %}">
-        <button type="button">Back to Dashboard</button>
-    </a>
-    <h1>WinRate Reports</h1>
-    <h3>Performance Calendar</h3>
 
-    <!-- Nawigacja między miesiącami -->
-    <div class="calendar-navigation">
-        <a href="{{ previous_month_url }}" class="nav-arrow">&lt;</a>  <!-- Strzałka do poprzedniego miesiąca -->
-        <span class="current-month">{{ current_month }}</span>  <!-- Nazwa miesiąca -->
-        <a href="{{ next_month_url }}" class="nav-arrow">&gt;</a>  <!-- Strzałka do następnego miesiąca -->
+{% include 'navigation.html' %}
+
+<div class="container mt-5">
+
+    <!-- Kalendarz Performance -->
+    <div class="section">
+    <h3>Performance Calendar</h3>
+    <div class="d-flex justify-content-center mb-4">
+        <a href="{{ previous_month_url }}" class="btn btn-outline-secondary me-3">&lt; Previous Month</a>
+        <span class="current-month fw-bold">{{ current_month }}</span>
+        <a href="{{ next_month_url }}" class="btn btn-outline-secondary ms-3">Next Month &gt;</a>
     </div>
     
     <div class="calendar-container">
-        <!-- Puste komórki przed dniami z danymi -->
         {% for _ in empty_days_before %}
         <div class="calendar-day empty"></div>
         {% endfor %}
-    
-        <!-- Dni z danymi -->
         {% for day in daily_data %}
         <div class="calendar-day {% if day.pnl >= 0 %}positive-pnl{% elif day.pnl is not none %}negative-pnl{% else %}empty{% endif %}">
             <div class="date">{{ day.date }}</div>
@@ -41,138 +41,146 @@
             {% endif %}
         </div>
         {% endfor %}
-    
-        <!-- Puste komórki po dniach z danymi -->
         {% for _ in empty_days_after %}
         <div class="calendar-day empty"></div>
         {% endfor %}
     </div>
-
-    <!-- Total Report -->
-    <div>
-        <h3>WinRate Report - Total</h3>
-        <p>Total number of trades with "YES" or "NO" result: {{ total_report.total_trades }}</p>
-        <p>Number of trades with "YES": {{ total_report.yes_count }}</p>
-        <p>Number of trades with "NO": {{ total_report.no_count }}</p>
-        <p>WinRate: {{ total_report.win_rate }}%</p>
-        <p>Average Risk-Reward Ratio (RRR): {{ total_report.avg_rrr }}</p>
-        <p>Minimum required WinRate: {{ total_report.min_win_rate }}%</p>
-        <p>Is profitable: {{ total_report.is_profitable }}</p>
-
-        <!-- Wykres kołowy dla raportu total -->
-        <h4>WinRate Pie Chart</h4>
-        <div id="pie-chart-total">
-            {{ pie_chart_total_html|safe }}
+</div>
+    <!-- Wykres słupkowy dla PnL z ostatnich 30 dni -->
+    <div class="section">
+        <h3>Daily PnL for the Last 30 Days</h3>
+        <div id="bar-chart-daily">
+            {{ bar_chart_pnl_html|safe }}
         </div>
+    </div>
 
-        <div>
-            <h3>Daily PnL for the Last 30 Days</h3>
-            <div id="bar-chart-daily">
-                {{ bar_chart_pnl_html|safe }}
+    <!-- Raporty w formacie grid -->
+    <div class="reports-grid row mt-5">
+        <!-- Total Report -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Total</h3>
+                    <p>Total trades: {{ total_report.total_trades }}</p>
+                    <p>Win trades: {{ total_report.yes_count }}</p>
+                    <p>Lose trades: {{ total_report.no_count }}</p>
+                    <p>Win Trades: {{ total_report.yes_count }}</p>
+                    <p>Lose Trades: {{ total_report.no_count }}</p>
+                    <p>WinRate: {{ total_report.win_rate }}%</p>
+                    <p>Avg. RRR: {{ total_report.avg_rrr }}</p>
+                    <p>Min. required WinRate: {{ total_report.min_win_rate }}%</p>
+                    <p>Is profitable: {{ total_report.is_profitable }}</p>
+                    <div class="chart-wrapper">
+                    <div id="pie-chart-total">{{ pie_chart_total_html|safe }}</div>
+                </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Monthly Report -->
-    <div>
-        <h3>WinRate Report - Last 30 Days</h3>
-        <p>Total number of trades with "YES" or "NO" result: {{ monthly_report.total_trades }}</p>
-        <p>Number of trades with "YES": {{ monthly_report.yes_count }}</p>
-        <p>Number of trades with "NO": {{ monthly_report.no_count }}</p>
-        <p>WinRate: {{ monthly_report.win_rate }}%</p>
-        <p>Average Risk-Reward Ratio (RRR): {{ monthly_report.avg_rrr }}</p>
-        <p>Minimum required WinRate: {{ monthly_report.min_win_rate }}%</p>
-        <p>Is profitable: {{ monthly_report.is_profitable }}</p>
-
-        <h4>WinRate Pie Chart (Last 30 Days)</h4>
-        <div id="pie-chart-monthly">
-            {{ pie_chart_monthly_html|safe }}
+        <!-- Monthly Report -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Last 30 Days</h3>
+                    <p>Total trades: {{ monthly_report.total_trades }}</p>
+                    <p>Win trades: {{ monthly_report.yes_count }}</p>
+                    <p>Lose trades:  {{ monthly_report.no_count }}</p>
+                    <p>Win Trades: {{ monthly_report.yes_count }}</p>
+                    <p>Lose Trades: {{ monthly_report.no_count }}</p>
+                    <p>WinRate: {{ monthly_report.win_rate }}%</p>
+                    <p>Avg. RRR: {{ monthly_report.avg_rrr }}</p>
+                    <p>Min. required WinRate: {{ monthly_report.min_win_rate }}%</p>
+                    <p>Is profitable: {{ monthly_report.is_profitable }}</p>
+                    <div class="chart-wrapper">
+                    <div id="pie-chart-monthly">{{ pie_chart_monthly_html|safe }}</div>
+                </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Daily Report -->
-    <div>
-        <h3>WinRate Report - Today</h3>
-        <p>Total number of trades with "YES" or "NO" result: {{ daily_report.total_trades }}</p>
-        <p>Number of trades with "YES": {{ daily_report.yes_count }}</p>
-        <p>Number of trades with "NO": {{ daily_report.no_count }}</p>
-        <p>WinRate: {{ daily_report.win_rate }}%</p>
-        <p>Average Risk-Reward Ratio (RRR): {{ daily_report.avg_rrr }}</p>
-        <p>Minimum required WinRate: {{ daily_report.min_win_rate }}%</p>
-        <p>Is profitable: {{ daily_report.is_profitable }}</p>
-
-        <h4>WinRate Pie Chart (Today)</h4>
-        <div id="pie-chart-daily">
-            {{ pie_chart_daily_html|safe }}
+        <!-- Daily Report -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Today</h3>
+                    <p>Total trades: {{ daily_report.total_trades }}</p>
+                    <p>Win trades: {{ daily_report.yes_count }}</p>
+                    <p>Lose trades:  {{ daily_report.no_count }}</p>
+                    <p>Win Trades: {{ daily_report.yes_count }}</p>
+                    <p>Lose Trades: {{ daily_report.no_count }}</p>
+                    <p>WinRate: {{ daily_report.win_rate }}%</p>
+                    <p>Avg. RRR: {{ daily_report.avg_rrr }}</p>
+                    <p>Min. required WinRate: {{ daily_report.min_win_rate }}%</p>
+                    <p>Is profitable: {{ daily_report.is_profitable }}</p>
+                    <div class="chart-wrapper">
+                        <div id="pie-chart-daily">{{ pie_chart_daily_html|safe }}</div>
+                    </div>
+                    
+                </div>
+            </div>
         </div>
-    </div>
 
- <!-- Formularz do wyboru zakresu dat -->
- <form method="GET" action="{% url 'reports' %}">
-    <label for="start_date">Start Date:</label>
-    <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
-    
-    <label for="end_date">End Date:</label>
-    <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
-    
-    <button type="submit">Filter</button>
-</form>
 
-<!-- Wykres kołowy -->
-<div>
-    <h3>WinRate Pie Chart</h3>
-    <div id="pie-chart-filtered">
-        {{ pie_chart_filtered_html|safe }}
-    </div>
-</div>
+<!-- Sekcja filtrowania po dacie (pełna szerokość w rzędzie) -->
+<div class="filter-section">
+    <div class="filter-card">
+        <h3>Filter WinRate by Date Range</h3>
+        <form id="date-filter-form" method="GET" action="{% url 'reports' %}">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="date-input">
+            
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="date-input">
 
-<!-- Wykres słupkowy PnL -->
-<div>
-    <h3>Daily PnL</h3>
-    <div id="bar-chart-filtered">
-        {{ bar_chart_filtered_pnl_html|safe }}
+            <button type="submit" class="filter-button">Filter</button>
+        </form>
+        <h4 class="chart-title filtered-pie hidden">Filtered WinRate Pie Chart</h4>
+        <div id="pie-chart-filtered" class="chart-container hidden">{{ pie_chart_filtered_html|safe }}</div>
+        <h4 class="chart-title filtered-bar hidden">Filtered Daily PnL Bar Chart</h4>
+        <div id="bar-chart-filtered" class="chart-container hidden">{{ bar_chart_filtered_pnl_html|safe }}</div>
     </div>
 </div>
 
-<form id="pair-form">
-    <label for="pair">Choose Currency Pair:</label>
-    <input type="text" id="pair" name="pair" list="pairs" required>
-    <datalist id="pairs">
-        {% for pair in pairs %}
-        <option value="{{ pair.name }}">
-        {% endfor %}
-    </datalist>
-    <button type="submit">Show WinRate</button>
-</form>
+<!-- Sekcja z parami walutowymi i strategiami (dwa elementy obok siebie) -->
+<div class="row-sections">
+    <div class="pair-section">
+        <h3>WinRate by Currency Pair</h3>
+        <form id="pair-form">
+            <label for="pair">Choose Currency Pair:</label>
+            <input type="text" id="pair" name="pair" list="pairs" required class="text-input">
+            <datalist id="pairs">
+                {% for pair in pairs %}
+                <option value="{{ pair.name }}">
+                {% endfor %}
+            </datalist>
+            <button type="submit" class="filter-button">Show WinRate</button>
+        </form>
+        <h4 class="chart-title pair hidden">Win vs Lose for Selected Pair</h4>
+        <div id="pie-chart-pairs" class="chart-container hidden">{{ pie_chart_pairs_html|safe }}</div>
+    </div>
 
-<!-- Kontener na wykres WinRate dla par walutowych -->
-<div>
-    <h3>WinRate Pie Chart for Selected Pair</h3>
-    <div id="pie-chart-pairs">
-        {{ pie_chart_pairs_html|safe }}
+    <div class="strategy-section">
+        <h3>WinRate by Strategy</h3>
+        <form id="strategy-form">
+            <label for="strategy">Choose Strategy:</label>
+            <input type="text" id="strategy" name="strategy" list="strategies" required class="text-input">
+            <datalist id="strategies">
+                {% for strategy in strategies %}
+                <option value="{{ strategy.name }}">
+                {% endfor %}
+            </datalist>
+            <button type="submit" class="filter-button">Show WinRate</button>
+        </form>
+        <h4 class="chart-title strategy hidden">Win vs Lose for Selected Strategy</h4>
+        <div id="pie-chart-strategies" class="chart-container hidden">{{ pie_chart_strategy_html|safe }}</div>
     </div>
 </div>
 
-<form id="strategy-form">
-    <label for="strategy">Choose Strategy:</label>
-    <input type="text" id="strategy" name="strategy" list="strategies" required>
-    <datalist id="strategies">
-        {% for strategy in strategies %}
-        <option value="{{ strategy.name }}">
-        {% endfor %}
-    </datalist>
-    <button type="submit">Show WinRate</button>
-</form>
-<div>
-    <h3>WinRate Pie Chart for Selected Strategy</h3>
-    <div id="pie-chart-strategies">
-        {{ pie_chart_strategy_html|safe }}  <!-- Tutaj wygenerowany HTML dla wykresu -->
-    </div>
+
 </div>
 
-    <a href="{% url 'dashboard' %}">
-        <button type="button">Back to Dashboard</button>
-    </a>
-    <script src="{% static 'js/filterReports.js' %}"></script>
+<script src="{% static 'js/filterReports.js' %}"></script>
+<script src="{% static 'js/calendar.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

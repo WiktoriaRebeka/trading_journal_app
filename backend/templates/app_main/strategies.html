@@ -1,130 +1,111 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Strategies</title>
-    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/strategies.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>My Strategies</h1>
 
-    <a href="{% url 'dashboard' %}">
-        <button type="button">Back to Dashboard</button>
-    </a>
+<!-- Pasek nawigacji -->
+{% include 'navigation.html' %}
 
-    <!-- Przycisk do pokazania/ukrycia formularza dodawania nowej strategii -->
-    <button id="add-strategy-button">New Strategy</button>
+<div class="container mt-5">
+    <h3 class="text-center mb-4">My Strategies</h3>
+    
 
-    <!-- Formularz dodawania nowej strategii, ukrywany na starcie -->
-    <div id="new-strategy-form" style="display: none;">
-        <form method="POST" enctype="multipart/form-data" id="strategyForm">
+    
+    <div class="text-center mb-4">
+        <button id="add-strategy-button" class="btn btn-primary">New Strategy</button>
+    </div>
+
+    <div id="new-strategy-form" class="form-container" style="display: none;">
+        <form method="POST" enctype="multipart/form-data" id="strategyForm" class="bg-light p-4 rounded shadow-sm">
             {% csrf_token %}
-
-            <!-- Nazwa strategii -->
-            <label for="strategy_name">Strategy Name:</label>
-            <input type="text" id="strategy_name" name="strategy_name" required><br>
-
-            <!-- Opis strategii -->
-            <label for="strategy_description">Description:</label>
-            <textarea id="strategy_description" name="strategy_description" rows="3" required></textarea><br>
-
-            <!-- Ramy czasowe -->
-            <label for="timeframe">Timeframe:</label>
-            <select id="timeframe" name="timeframe" required>
-                <option value="1M">1M</option>
-                <option value="3M">3M</option>
-                <option value="5M">5M</option>
-                <option value="15M">15M</option>
-                <option value="30M">30M</option>
-                <option value="1H">1H</option>
-                <option value="4H">4H</option>
-                <option value="1D">1D</option>
-            </select><br>
-
-            <!-- Wskaźniki techniczne -->
-            <label for="indicators">Technical Indicators:</label>
-            <input type="text" id="indicators" name="indicators" placeholder="e.g. MACD, RSI, EMA" required><br>
-
-            <!-- Zasady wejścia -->
-            <label for="entry_rules">Entry Rules:</label>
-            <textarea id="entry_rules" name="entry_rules" rows="3" required></textarea><br>
-
-            <!-- Zasady wyjścia -->
-            <label for="exit_rules">Exit Rules:</label>
-            <textarea id="exit_rules" name="exit_rules" rows="3" required></textarea><br>
-
-            <!-- Typ strategii -->
-            <label for="strategy_type">Strategy Type:</label>
-            <input type="text" id="strategy_type" name="strategy_type" list="strategy_types" placeholder="e.g. scalping, swing, intraday" required><br>
-            <datalist id="strategy_types">
-                <option value="scalping"></option>
-                <option value="intraday"></option>
-                <option value="daytrading"></option>
-                <option value="swing"></option>
-            </datalist><br>
-
-            <!-- Uwagi/Notatki -->
-            <label for="notes">Notes/Comments:</label>
-            <textarea id="notes" name="notes" rows="3"></textarea><br>
-
-            <!-- Załączniki -->
-            <label for="attachments">Attachments (max 5):</label>
-            <input type="file" id="attachments" name="attachments" multiple accept="image/*" max="5"><br>
-
-            <button type="submit">Add Strategy</button>
+            <div class="mb-3">
+                <label for="strategy_name" class="form-label">Strategy Name:</label>
+                <input type="text" id="strategy_name" name="strategy_name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="strategy_description" class="form-label">Description:</label>
+                <textarea id="strategy_description" name="strategy_description" rows="3" class="form-control" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="timeframe" class="form-label">Timeframe:</label>
+                <select id="timeframe" name="timeframe" class="form-select" required>
+                    <option value="1M">1M</option><option value="3M">3M</option><option value="5M">5M</option><option value="15M">15M</option><option value="30M">30M</option><option value="1H">1H</option><option value="4H">4H</option><option value="1D">1D</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="indicators" class="form-label">Technical Indicators:</label>
+                <input type="text" id="indicators" name="indicators" class="form-control" placeholder="e.g. MACD, RSI, EMA" required>
+            </div>
+            <div class="mb-3">
+                <label for="entry_rules" class="form-label">Entry Rules:</label>
+                <textarea id="entry_rules" name="entry_rules" rows="3" class="form-control" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="exit_rules" class="form-label">Exit Rules:</label>
+                <textarea id="exit_rules" name="exit_rules" rows="3" class="form-control" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="strategy_type" class="form-label">Strategy Type:</label>
+                <input type="text" id="strategy_type" name="strategy_type" list="strategy_types" class="form-control" placeholder="e.g. scalping, swing, intraday" required>
+                <datalist id="strategy_types">
+                    <option value="scalping"></option><option value="intraday"></option><option value="daytrading"></option><option value="swing"></option>
+                </datalist>
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes/Comments:</label>
+                <textarea id="notes" name="notes" rows="3" class="form-control"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="attachments" class="form-label">Attachments (max 5):</label>
+                <input type="file" id="attachments" name="attachments" multiple accept="image/*" max="5" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success w-100">Add Strategy</button>
         </form>
     </div>
 
-    <!-- Tabelka strategii -->
-    <table border="1">
-        <thead>
+    <table class="table table-striped table-bordered mt-4">
+        <thead class="table-dark">
             <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Timeframe</th>
-                <th>Technical Indicators</th>
-                <th>Entry Rules</th>
-                <th>Exit Rules</th>
-                <th>Type</th>
-                <th>Notes</th>
-                <th>Attachments</th> <!-- Kolumna na załączniki -->
-                <th>Actions</th> <!-- Dodana kolumna dla akcji (Edytuj, Usuń) -->
+                <th>Name</th><th>Description</th><th>Timeframe</th><th>Technical Indicators</th><th>Entry Rules</th><th>Exit Rules</th><th>Type</th><th>Notes</th><th>Attachments</th><th>Actions</th>
             </tr>
         </thead>
         <tbody id="strategies-tbody">
             {% for strategy_data in strategies_with_attachments %}
             <tr data-strategy-id="{{ strategy_data.strategy.id }}">
-                <td class="name">{{ strategy_data.strategy.name }}</td>
-                <td class="description">{{ strategy_data.strategy.description }}</td>
-                <td class="timeframe">{{ strategy_data.strategy.timeframe }}</td>
-                <td class="indicators">{{ strategy_data.strategy.indicators }}</td>
-                <td class="entry_rules">{{ strategy_data.strategy.entry_rules }}</td>
-                <td class="exit_rules">{{ strategy_data.strategy.exit_rules }}</td>
-                <td class="type">{{ strategy_data.strategy.type }}</td>
-                <td class="notes">{{ strategy_data.strategy.notes }}</td>
+                <td>{{ strategy_data.strategy.name }}</td>
+                <td>{{ strategy_data.strategy.description }}</td>
+                <td>{{ strategy_data.strategy.timeframe }}</td>
+                <td>{{ strategy_data.strategy.indicators }}</td>
+                <td>{{ strategy_data.strategy.entry_rules }}</td>
+                <td>{{ strategy_data.strategy.exit_rules }}</td>
+                <td>{{ strategy_data.strategy.type }}</td>
+                <td>{{ strategy_data.strategy.notes }}</td>
                 <td>
-                    <ul class="attachments-list">
+                    <ul class="list-unstyled">
                         {% for attachment in strategy_data.attachments %}
                         <li><a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name }}</a></li>
-                        {% empty %}
-                        <li>No attachments</li>
-                        {% endfor %}
+                        {% empty %}<li>No attachments</li>{% endfor %}
                     </ul>
                 </td>
                 <td>
-                    <!-- Przycisk edytowania -->
-                    <button type="button" class="edit-strategy-button" data-id="{{ strategy_data.strategy.id }}">Edit</button>
-                    <!-- Przycisk zapisywania, ukryty na początku -->
-                    <button type="button" class="save-strategy-button" data-id="{{ strategy_data.strategy.id }}" style="display:none;">Save</button>
-                    <!-- Przycisk usuwania -->
-                    <button type="button" class="delete-strategy-button" data-id="{{ strategy_data.strategy.id }}">Delete</button>
+                    <button type="button" class="custom-edit-button btn-sm" data-id="{{ strategy_data.strategy.id }}">Edit</button>
+                    <button type="button" class="custom-save-button btn-sm" data-id="{{ strategy_data.strategy.id }}" style="display:none;">Save</button>
+                    <button type="button" class="custom-delete-button btn-sm" data-id="{{ strategy_data.strategy.id }}">Delete</button>
+
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 
-    <script src="{% static 'js/strategies.js' %}"></script>
+<script src="{% static 'js/strategies.js' %}"></script>
 </body>
 </html>
