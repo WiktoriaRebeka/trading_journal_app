@@ -18,6 +18,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+
 @login_required
 def reports_view(request):
     # Pobierz wybrany miesiąc i rok z parametrów URL (domyślnie aktualny miesiąc i rok)
@@ -32,12 +33,12 @@ def reports_view(request):
     pairs = Pair.objects.all()
     
     # Pobieramy strategie użytkownika
-    strategies = Strategy.objects.filter(user=request.user)  # Dodaj to
+    strategies = Strategy.objects.filter(user=request.user)
 
-    # Raporty dla różnych okresów (nie zmieniają się z miesiącem)
+    # Raporty dla różnych okresów
     total_report = calculate_report_data(journal_entries)
     monthly_report = get_report_for_period(journal_entries, days=30)
-
+    
     # Raport dzisiejszy
     today = timezone.now().date()
     daily_entries = journal_entries.filter(entry_date__date=today)
@@ -75,7 +76,6 @@ def reports_view(request):
                 'winrate': winrate
             })
         else:
-            # Dodaj puste dni, gdzie nie było żadnych transakcji
             daily_data.append({
                 'date': current_date,
                 'pnl': None,
@@ -87,7 +87,7 @@ def reports_view(request):
     first_weekday_of_month = first_day_of_month.weekday()
     empty_days_before = [''] * first_weekday_of_month
     total_cells = first_weekday_of_month + len(daily_data)
-    empty_days_after = [''] * ((7 - total_cells % 7) % 7)  # Lista pustych miejsc
+    empty_days_after = [''] * ((7 - total_cells % 7) % 7)
 
     # Poprzedni i następny miesiąc (nawigacja strzałkami)
     previous_month = selected_date - timedelta(days=1)
@@ -95,44 +95,76 @@ def reports_view(request):
     next_month = selected_date + timedelta(days=days_in_month)
     next_month_url = f"?year={next_month.year}&month={next_month.month}"
 
-    # --------- Tworzenie wykresu kołowego (pie chart) dla ogólnego raportu ---------
-    pie_fig_total = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], 
-                                           values=[total_report['yes_count'], total_report['no_count']])])
-    pie_fig_total.update_layout(title="Win vs Lose - Total")
+    pie_fig_total = go.Figure(data=[go.Pie(
+        labels=['Win', 'Lose'], 
+        values=[total_report['yes_count'], total_report['no_count']],
+        marker=dict(colors=['#4CAF50', '#FF6B6B'], line=dict(color='#ffffff', width=2))  # Zielony dla wygranych, czerwony dla przegranych
+    )])
+    pie_fig_total.update_layout(
+        title="Win vs Lose - Total",
+        title_font=dict(size=16, color='#4a4a4a'),
+        paper_bgcolor='#f4f5f7',
+        font=dict(color='#4a4a4a')
+    )
     pie_chart_total_html = pie_fig_total.to_html(full_html=False)
 
     # Pie chart dla ostatnich 30 dni
-    pie_fig_monthly = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], 
-                                             values=[monthly_report['yes_count'], monthly_report['no_count']])])
-    pie_fig_monthly.update_layout(title="Win vs Lose - Last 30 Days")
+    pie_fig_monthly = go.Figure(data=[go.Pie(
+        labels=['Win', 'Lose'], 
+        values=[monthly_report['yes_count'], monthly_report['no_count']],
+        marker=dict(colors=['#4CAF50', '#FF6B6B'], line=dict(color='#ffffff', width=2))  # Zielony dla wygranych, czerwony dla przegranych
+    )])
+    pie_fig_monthly.update_layout(
+        title="Win vs Lose - Last 30 Days",
+        title_font=dict(size=16, color='#4a4a4a'),
+        paper_bgcolor='#f4f5f7',
+        font=dict(color='#4a4a4a')
+    )
     pie_chart_monthly_html = pie_fig_monthly.to_html(full_html=False)
 
     # Pie chart dla dzisiejszego dnia
-    pie_fig_daily = go.Figure(data=[go.Pie(labels=['Win', 'Lose'], 
-                                           values=[daily_report['yes_count'], daily_report['no_count']])])
-    pie_fig_daily.update_layout(title="Win vs Lose - Today")
+    pie_fig_daily = go.Figure(data=[go.Pie(
+        labels=['Win', 'Lose'], 
+        values=[daily_report['yes_count'], daily_report['no_count']],
+        marker=dict(colors=['#4CAF50', '#FF6B6B'], line=dict(color='#ffffff', width=2))  # Zielony dla wygranych, czerwony dla przegranych
+    )])
+    pie_fig_daily.update_layout(
+        title="Win vs Lose - Today",
+        title_font=dict(size=16, color='#4a4a4a'),
+        paper_bgcolor='#f4f5f7',
+        font=dict(color='#4a4a4a')
+        )
     pie_chart_daily_html = pie_fig_daily.to_html(full_html=False)
 
-    # Przygotowanie danych dla wykresu słupkowego (PnL)
+      
+
+    # --------- Wykres słupkowy (PnL) z grafitową kolorystyką ---------
     dates = [entry['entry_date__date'].strftime('%Y-%m-%d') for entry in daily_pnl_data]
     pnl_values = [entry['daily_pnl'] for entry in daily_pnl_data]
-
-    # Tworzenie wykresu słupkowego dla PnL
-    bar_fig_pnl = go.Figure(data=[go.Bar(x=dates, y=pnl_values, 
-                                         marker_color=['green' if x >= 0 else 'red' for x in pnl_values])])
-   # Aktualizacja wyglądu wykresu z etykietami dla dat
+    bar_fig_pnl = go.Figure(data=[go.Bar(
+        x=dates, 
+        y=pnl_values,
+        marker_color=['#4CAF50' if x >= 0 else '#FF6B6B' for x in pnl_values]
+    )])
     bar_fig_pnl.update_layout(
-    title="Daily PnL for the Selected Month",
-    xaxis_title="Date",
-    yaxis_title="PnL",
-    xaxis=dict(
-        tickmode='array',  # Wyświetla każdą datę jako tick
-        tickvals=dates,    # Używa dat jako wartości ticków
-        ticktext=dates,    # Wyświetla daty jako etykiety
-        tickangle=45       # Opcjonalnie: obraca etykiety o 45 stopni dla lepszej czytelności
-    ),
-    yaxis=dict(zeroline=True, zerolinecolor='black'),
-)
+        title="Daily PnL for the Selected Month",
+        title_font=dict(size=16, color='#4a4a4a'),
+        xaxis=dict(
+            title="Date",
+            tickfont=dict(size=12, color='#4a4a4a'),
+            tickangle=45,
+            linecolor='#4a4a4a'
+        ),
+        yaxis=dict(
+            title="PnL",
+            tickfont=dict(size=12, color='#4a4a4a'),
+            zeroline=True,
+            zerolinecolor='#4a4a4a',
+            linecolor='#4a4a4a'
+        ),
+        paper_bgcolor='#f4f5f7',
+        plot_bgcolor='#ffffff'
+    )
     bar_chart_pnl_html = bar_fig_pnl.to_html(full_html=False)
 
     # Przekazanie raportów, wykresów i strategii do szablonu
@@ -140,20 +172,19 @@ def reports_view(request):
         'total_report': total_report,
         'monthly_report': monthly_report,
         'daily_report': daily_report,
-        'daily_data': daily_data,  # Przekazujemy dane do kalendarza
-        'empty_days_before': empty_days_before,  # Puste dni przed
-        'empty_days_after': empty_days_after,    # Puste dni po
-        'pie_chart_total_html': pie_chart_total_html,  # Dodanie wykresu kołowego (total)
-        'pie_chart_monthly_html': pie_chart_monthly_html,  # Dodanie wykresu kołowego (30 dni)
-        'pie_chart_daily_html': pie_chart_daily_html,  # Dodanie wykresu kołowego (dzienny)
-        'bar_chart_pnl_html': bar_chart_pnl_html,      # Dodanie wykresu PnL
+        'daily_data': daily_data,
+        'empty_days_before': empty_days_before,
+        'empty_days_after': empty_days_after,
+        'pie_chart_total_html': pie_chart_total_html,
+        'pie_chart_monthly_html': pie_chart_monthly_html,
+        'pie_chart_daily_html': pie_chart_daily_html,
+        'bar_chart_pnl_html': bar_chart_pnl_html,
         'pairs': pairs,
-        'strategies': strategies,  # Dodajemy strategie do kontekstu
-        'current_month': selected_date.strftime('%B %Y'),  # Nazwa miesiąca
-        'previous_month_url': previous_month_url,  # URL do poprzedniego miesiąca
-        'next_month_url': next_month_url,  # URL do następnego miesiąca
+        'strategies': strategies,
+        'current_month': selected_date.strftime('%B %Y'),
+        'previous_month_url': previous_month_url,
+        'next_month_url': next_month_url,
     })
-
 
 @login_required
 def filter_reports_view(request):

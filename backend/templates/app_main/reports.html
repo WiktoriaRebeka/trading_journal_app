@@ -15,7 +15,7 @@
 {% include 'navigation.html' %}
 
 <div class="container mt-5">
-    <h1 class="text-center mb-4">WinRate Reports</h1>
+    
 
     <!-- Kalendarz Performance -->
     <div class="section">
@@ -61,10 +61,10 @@
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h3 class="card-title">WinRate Report - Total</h3>
+                    <h3 class="card-title">Total</h3>
                     <p>Total trades: {{ total_report.total_trades }}</p>
-                    <p>Trades with "YES": {{ total_report.yes_count }}</p>
-                    <p>Trades with "NO": {{ total_report.no_count }}</p>
+                    <p>Win trades: {{ total_report.yes_count }}</p>
+                    <p>Lose trades: {{ total_report.no_count }}</p>
                     <p>WinRate: {{ total_report.win_rate }}%</p>
                     <p>Avg. RRR: {{ total_report.avg_rrr }}</p>
                     <p>Min. required WinRate: {{ total_report.min_win_rate }}%</p>
@@ -80,10 +80,10 @@
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h3 class="card-title">WinRate Report - Last 30 Days</h3>
+                    <h3 class="card-title">Last 30 Days</h3>
                     <p>Total trades: {{ monthly_report.total_trades }}</p>
-                    <p>Trades with "YES": {{ monthly_report.yes_count }}</p>
-                    <p>Trades with "NO": {{ monthly_report.no_count }}</p>
+                    <p>Win trades: {{ monthly_report.yes_count }}</p>
+                    <p>Lose trades:  {{ monthly_report.no_count }}</p>
                     <p>WinRate: {{ monthly_report.win_rate }}%</p>
                     <p>Avg. RRR: {{ monthly_report.avg_rrr }}</p>
                     <p>Min. required WinRate: {{ monthly_report.min_win_rate }}%</p>
@@ -99,10 +99,10 @@
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h3 class="card-title">WinRate Report - Today</h3>
+                    <h3 class="card-title">Today</h3>
                     <p>Total trades: {{ daily_report.total_trades }}</p>
-                    <p>Trades with "YES": {{ daily_report.yes_count }}</p>
-                    <p>Trades with "NO": {{ daily_report.no_count }}</p>
+                    <p>Win trades: {{ daily_report.yes_count }}</p>
+                    <p>Lose trades:  {{ daily_report.no_count }}</p>
                     <p>WinRate: {{ daily_report.win_rate }}%</p>
                     <p>Avg. RRR: {{ daily_report.avg_rrr }}</p>
                     <p>Min. required WinRate: {{ daily_report.min_win_rate }}%</p>
