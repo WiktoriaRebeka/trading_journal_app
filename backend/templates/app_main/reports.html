@@ -10,14 +10,16 @@
     <link rel="stylesheet" href="{% static 'css/reports.css' %}">
     <link rel="stylesheet" href="{% static 'css/calendar.css' %}">
 </head>
-<body>
+<body class="app-container">
 
-{% include 'navigation.html' %}
+    <nav class="navbar-vertical">
+        {% include 'navigation.html' %}
+    </nav>
 
-<div class="container mt-5">
+<div class="main-content">
 
-    <!-- Kalendarz Performance -->
-    <div class="section">
+        <!-- Sekcja kalendarza -->
+    <div class="container">
     <h3>Performance Calendar</h3>
     <div class="d-flex justify-content-center mb-4">
         <a href="{{ previous_month_url }}" class="btn btn-outline-secondary me-3">&lt; Previous Month</a>

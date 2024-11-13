@@ -5,16 +5,21 @@
     <title>Trade Dashboard</title>
     <!-- Link do Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
     <!-- Link do pliku CSS -->
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 </head>
 
-<body>
+<body class="app-container">
     <!-- Nawigacja -->
+    <nav class="navbar-vertical">
     {% include 'navigation.html' %}
+    </nav>
 
- <div class="container mt-5">
-    <h3 class="text-center mb-4">Trade Calculator</h3>
+    <div class="main-content">
+    <div class="layout-container">
+    <h3 class="text-center mb-4">Laverage Calculator</h3>
     <form method="POST" id="calculatorForm">
         {% csrf_token %}
 
@@ -129,7 +134,7 @@
             <button type="button" id="reset_button" class="btn btn-secondary btn-lg">Start a New Project</button>
         </div>
     </form>
-</div>
+
 
 
 
@@ -209,6 +214,8 @@
 </div>
 
 <div id="error_message" style="color: red;"></div>
-
+</div>
+</div>
+</body>
 <script type="module" src="{% static 'js/dashboard.js' %}"></script>
 <script type="module" src="{% static 'js/journal_data.js' %}"></script>

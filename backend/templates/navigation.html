@@ -1,31 +1,56 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">Trade Dashboard</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Link do Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+    <!-- Pasek nawigacyjny po lewej stronie -->
+    <nav class="navbar navbar-vertical bg-dark">
+        <div class="container-fluid d-flex flex-column align-items-start">
+            <a class="navbar-brand mb-4 d-flex align-items-center" href="{% url 'dashboard' %}">
+                <i class="fas fa-chart-line me-2"></i> <!-- Ikona dla logotypu -->
+                Dashboard
+            </a>
+            <ul class="navbar-nav flex-column w-100">
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a>
+                    <a class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                        <i class="fas fa-tachometer-alt me-3"></i> <!-- Ikona dla Dashboard -->
+                        Leverage Calculator
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'journal' %}active{% endif %}" href="{% url 'journal' %}">Open Journal</a>
+                    <a class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'journal' %}active{% endif %}" href="{% url 'journal' %}">
+                        <i class="fas fa-book me-3"></i> <!-- Ikona dla Journal -->
+                        Trading Journal
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'strategies' %}active{% endif %}" href="{% url 'strategies' %}">My Strategies</a>
+                    <a class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'strategies' %}active{% endif %}" href="{% url 'strategies' %}">
+                        <i class="fas fa-lightbulb me-3"></i> <!-- Ikona dla Strategies -->
+                        Strategies
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'reports' %}">Go to Reports</a>
+                    <a class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'reports' %}">
+                        <i class="fas fa-chart-bar me-3"></i> <!-- Ikona dla Reports -->
+                        Reports
+                    </a>
                 </li>
-                <li class="nav-item">
-                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                <li class="nav-item mt-auto w-100">
+                    <form action="{% url 'logout' %}" method="post" class="d-flex align-items-center w-100">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                        <button type="submit" class="btn btn-outline-light btn-sm w-100 d-flex align-items-center justify-content-center mt-3">
+                            <i class="fas fa-sign-out-alt me-2"></i> <!-- Ikona dla Logout -->
+                            Logout
+                        </button>
                     </form>
                 </li>
             </ul>
         </div>
-    </div>
-</nav>
+    </nav>
+    
