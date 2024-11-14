@@ -5,193 +5,142 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade Journal</title>
-    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/journal.css' %}">
 </head>
 <body class="app-container">
 
-<!-- Nawigacja -->
+<!-- Navigation -->
 <nav class="navbar-vertical">
     {% include 'navigation.html' %}
 </nav>
-<!-- Główna zawartość strony -->
+
+<!-- Main Content -->
 <div class="main-content">
-        <div class="layout-container">
-    <h3 class="text-center mb-4">Trade Journal</h3>
+    <div class="layout-container">
+        <h3 class="text-center mb-4">Trade Journal</h3>
 
-   <!-- Sekcja przycisków: Add an Entry i Filter -->
-   <div class="d-flex justify-content-start mb-4">
-    <button id="create-entry-button" class="btn custom-entry-button me-2">Add an Entry</button>
+        <!-- Buttons Section -->
+        <div class="d-flex justify-content-start mb-4">
+            <button id="create-entry-button" class="btn custom-entry-button me-2">Add an Entry</button>
+            <button type="submit" form="filter-form" class="btn btn-dark">Filter</button>
+        </div>
 
-    <button type="submit" form="filter-form" class="btn btn-dark">Filter</button>
-</div>
-
-<!-- Formularz filtrowania -->
-<form method="GET" action="{% url 'journal' %}" id="filter-form" class="row mb-4">
-    <div class="col-md-3">
-        <label for="pair_filter" class="form-label">Currency Pair:</label>
-        <select name="pair_filter" id="pair_filter" class="form-select">
-            <option value="" {% if selected_pair == "" %}selected{% endif %}>All</option>
-            {% for pair in pairs %}
-                <option value="{{ pair.name }}" {% if selected_pair == pair.name %}selected{% endif %}>
-                    {{ pair.name }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-3">
-        <label for="trade_type_filter" class="form-label">Trade Type:</label>
-        <select name="trade_type_filter" id="trade_type_filter" class="form-select">
-            <option value="" {% if selected_trade_type == "" %}selected{% endif %}>All</option>
-            <option value="long" {% if selected_trade_type == "long" %}selected{% endif %}>Long</option>
-            <option value="short" {% if selected_trade_type == "short" %}selected{% endif %}>Short</option>
-        </select>
-    </div>
-    <div class="col-md-3">
-        <label for="strategy_filter" class="form-label">Strategy:</label>
-        <select name="strategy_filter" id="strategy_filter" class="form-select">
-            <option value="" {% if selected_strategy == "" %}selected{% endif %}>All</option>
-            {% for strategy in strategies %}
-                <option value="{{ strategy.id }}" {% if selected_strategy == strategy.id|stringformat:"s" %}selected{% endif %}>
-                    {{ strategy.name }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-3">
-        <label for="win_filter" class="form-label">Win:</label>
-        <select name="win_filter" id="win_filter" class="form-select">
-            <option value="" {% if selected_win == "" %}selected{% endif %}>All</option>
-            <option value="YES" {% if selected_win == "YES" %}selected{% endif %}>YES</option>
-            <option value="NO" {% if selected_win == "NO" %}selected{% endif %}>NO</option>
-        </select>
-    </div>
-</form>
-
-    
-    
-
-    <!-- Kontener dla tabeli z przewijaniem -->
-    <div class="table-container position-relative">
-        <!-- Przycisk przewijania w lewo -->
-        <button class="scroll-left">&#9664;</button>
-        <!-- Przycisk przewijania w prawo -->
-        <button class="scroll-right">&#9654;</button>
-
-        <div class="table-responsive">
-            <table class="table table-striped table-hover table-bordered">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Entry Date</th>
-                        <th>Exit Date</th>
-                        <th>Currency</th>
-                        <th>Strategy</th>
-                        <th>Deposit Size</th>
-                        <th>Risk Size</th>
-                        <th>Position Size</th>
-                        <th>Leverage</th>
-                        <th>Currency Pair</th>
-                        <th>Trade Type</th>
-                        <th>Entry Price</th>
-                        <th>Stop Loss Price</th>
-                        <th>Risk Reward Ratio</th>
-                        <th>Exit Price</th>
-                        <th>Win</th>
-                        <th>PnL</th>
-                        <th>Attachments</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entry in journal_entries %}
-                    <tr id="entry-row-{{ entry.id }}">
-                        <td>
-                            <input type="datetime-local" class="form-control entry-date-input" 
-                                   value="{{ entry.entry_date|date:'Y-m-d\\TH:i:s' }}" 
-                                   data-entry-id="{{ entry.id }}" />
-                        </td>
-                        <td>
-                            <input type="datetime-local" class="form-control exit-date-input" 
-                                   value="{{ entry.exit_date|date:'Y-m-d\\TH:i:s' }}" 
-                                   data-entry-id="{{ entry.id }}" />
-                        </td>
-                        <td>{{ entry.currency }}</td>
-                        <td>
-                            <select name="strategy" class="form-select strategy-select" data-entry-id="{{ entry.id }}">
-                                <option value="">No Strategy</option>
-                                {% for strategy in strategies %}
-                                    <option value="{{ strategy.id }}" {% if entry.strategy and entry.strategy.id == strategy.id %}selected{% endif %}>
-                                        {{ strategy.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td>{{ entry.deposit|floatformat:2 }}</td>
-                        <td>{{ entry.calculated_risk_amount|floatformat:2 }}</td>
-                        <td>{{ entry.calculated_position|floatformat:2 }}</td>
-                        <td>{{ entry.calculated_leverage|floatformat:0 }}</td>
-                        <td>{{ entry.pair }}</td>
-                        <td>{{ entry.trade_type }}</td>
-                        <td>{{ entry.entry_price|floatformat:4 }}</td>
-                        <td>{{ entry.stop_loss|floatformat:4 }}</td>
-                        <td>{{ entry.target_choice }}</td>
-                        <td>{{ entry.target_price|floatformat:4 }}</td> <!-- Display Exit Price -->
-
-                        <td>
-                            <form method="POST" action="{% url 'update_win' entry.id %}">
-                                {% csrf_token %}
-                                <select name="win_choice" class="form-select win-choice-select" data-entry-id="{{ entry.id }}">
-                                    <option value="" {% if entry.win == '' or entry.win is None %}selected{% endif %}>---Choose---</option>
-                                    <option value="YES" {% if entry.win == 'YES' %}selected{% endif %}>YES</option>
-                                    <option value="NO" {% if entry.win == 'NO' %}selected{% endif %}>NO</option>
-                                </select>
-                            </form>
-                        </td>
-                        <td class="pnl-cell" 
-                            data-entry-id="{{ entry.id }}" 
-                            data-risk-amount="{{ entry.calculated_risk_amount|floatformat:2 }}" 
-                            data-win-amount="{{ entry.calculated_win_amount|floatformat:2 }}">
-                            {{ entry.pnl|floatformat:2 }}
-                        </td>
-                        <td>
-                            <!-- Wyświetlenie listy załączników -->
-                            <ul class="list-unstyled">
-                                {% for attachment in entry.attachments.all %}
-                                    <li>
-                                        <a href="{{ attachment.file.url }}" download>{{ attachment.file.name }}</a>
-                                    </li>
-                                {% empty %}
-                                    <li>No attachments</li>
-                                {% endfor %}
-                            </ul>
-                            <!-- Formularz do dodania nowego załącznika -->
-                            <form method="POST" enctype="multipart/form-data" action="{% url 'upload_attachment_to_journal_entry' entry.id %}">
-                                {% csrf_token %}
-                                <input type="file" name="attachment" class="form-control-file" required>
-                                <button type="submit" class="btn btn-secondary btn-sm mt-2">Upload</button>
-                            </form>
-                        </td>
-                        <td>
-                            <button class="btn btn-danger btn-sm delete-entry-button" data-entry-id="{{ entry.id }}">Delete</button>
-                        </td>
-                    </tr>
+        <!-- Filter Form -->
+        <form method="GET" action="{% url 'journal' %}" id="filter-form" class="row mb-4">
+            <div class="col-md-3">
+                <label for="pair_filter" class="form-label">Currency Pair:</label>
+                <select name="pair_filter" id="pair_filter" class="form-select">
+                    <option value="" {% if selected_pair == "" %}selected{% endif %}>All</option>
+                    {% for pair in pairs %}
+                        <option value="{{ pair.name }}" {% if selected_pair == pair.name %}selected{% endif %}>
+                            {{ pair.name }}
+                        </option>
                     {% endfor %}
-                </tbody>
-            </table>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="trade_type_filter" class="form-label">Trade Type:</label>
+                <select name="trade_type_filter" id="trade_type_filter" class="form-select">
+                    <option value="" {% if selected_trade_type == "" %}selected{% endif %}>All</option>
+                    <option value="long" {% if selected_trade_type == "long" %}selected{% endif %}>Long</option>
+                    <option value="short" {% if selected_trade_type == "short" %}selected{% endif %}>Short</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="strategy_filter" class="form-label">Strategy:</label>
+                <select name="strategy_filter" id="strategy_filter" class="form-select">
+                    <option value="" {% if selected_strategy == "" %}selected{% endif %}>All</option>
+                    {% for strategy in strategies %}
+                        <option value="{{ strategy.id }}" {% if selected_strategy == strategy.id|stringformat:"s" %}selected{% endif %}>
+                            {{ strategy.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="win_filter" class="form-label">Win:</label>
+                <select name="win_filter" id="win_filter" class="form-select">
+                    <option value="" {% if selected_win == "" %}selected{% endif %}>All</option>
+                    <option value="YES" {% if selected_win == "YES" %}selected{% endif %}>YES</option>
+                    <option value="NO" {% if selected_win == "NO" %}selected{% endif %}>NO</option>
+                </select>
+            </div>
+        </form>
+
+        <!-- Table Container with Scroll Buttons -->
+        <div class="table-container position-relative">
+               <!-- Scroll Buttons at the Top -->
+               <div class="scroll-buttons d-flex justify-content-between align-items-center">
+                <button class="scroll-left">&#9664;</button>
+                <button class="scroll-right">&#9654;</button>
+            </div>
+        
+    
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Entry Date</th>
+                            <th>Exit Date</th>
+                            <th>Currency</th>
+                            <th>Strategy</th>
+                            <th>Deposit Size</th>
+                            <th>Risk Size</th>
+                            <th>Position Size</th>
+                            <th>Leverage</th>
+                            <th>Currency Pair</th>
+                            <th>Trade Type</th>
+                            <th>Entry Price</th>
+                            <th>Stop Loss Price</th>
+                            <th>Risk Reward Ratio</th>
+                            <th>Exit Price</th>
+                            <th>Win</th>
+                            <th>PnL</th>
+                            <th>Attachments</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in journal_entries %}
+                        <tr id="entry-row-{{ entry.id }}">
+                            <!-- Entry and Exit Date Inputs -->
+                            <td><input type="datetime-local" class="form-control entry-date-input" value="{{ entry.entry_date|date:'Y-m-d\\TH:i:s' }}" data-entry-id="{{ entry.id }}" /></td>
+                            <td><input type="datetime-local" class="form-control exit-date-input" value="{{ entry.exit_date|date:'Y-m-d\\TH:i:s' }}" data-entry-id="{{ entry.id }}" /></td>
+                            <!-- Remaining Data Columns -->
+                            <td>{{ entry.currency }}</td>
+                            <td><select name="strategy" class="form-select strategy-select" data-entry-id="{{ entry.id }}"><option value="">No Strategy</option>{% for strategy in strategies %}<option value="{{ strategy.id }}" {% if entry.strategy and entry.strategy.id == strategy.id %}selected{% endif %}>{{ strategy.name }}</option>{% endfor %}</select></td>
+                            <td>{{ entry.deposit|floatformat:2 }}</td>
+                            <td>{{ entry.calculated_risk_amount|floatformat:2 }}</td>
+                            <td>{{ entry.calculated_position|floatformat:2 }}</td>
+                            <td>{{ entry.calculated_leverage|floatformat:0 }}</td>
+                            <td>{{ entry.pair }}</td>
+                            <td>{{ entry.trade_type }}</td>
+                            <td>{{ entry.entry_price|floatformat:4 }}</td>
+                            <td>{{ entry.stop_loss|floatformat:4 }}</td>
+                            <td>{{ entry.target_choice }}</td>
+                            <td>{{ entry.target_price|floatformat:4 }}</td>
+                            <!-- Win Selection and PnL -->
+                            <td><form method="POST" action="{% url 'update_win' entry.id %}">{% csrf_token %}<select name="win_choice" class="form-select win-choice-select" data-entry-id="{{ entry.id }}"><option value="" {% if entry.win == '' or entry.win is None %}selected{% endif %}>---Choose---</option><option value="YES" {% if entry.win == 'YES' %}selected{% endif %}>YES</option><option value="NO" {% if entry.win == 'NO' %}selected{% endif %}>NO</option></select></form></td>
+                            <td class="pnl-cell" data-entry-id="{{ entry.id }}" data-risk-amount="{{ entry.calculated_risk_amount|floatformat:2 }}" data-win-amount="{{ entry.calculated_win_amount|floatformat:2 }}">{{ entry.pnl|floatformat:2 }}</td>
+                            <!-- Attachments and Actions -->
+                            <td><ul class="list-unstyled">{% for attachment in entry.attachments.all %}<li><a href="{{ attachment.file.url }}" download>{{ attachment.file.name }}</a></li>{% empty %}<li>No attachments</li>{% endfor %}</ul><form method="POST" enctype="multipart/form-data" action="{% url 'upload_attachment_to_journal_entry' entry.id %}">{% csrf_token %}<input type="file" name="attachment" class="form-control-file" required><button type="submit" class="btn btn-secondary btn-sm mt-2">Upload</button></form></td>
+                            <td><button class="btn btn-danger btn-sm delete-entry-button" data-entry-id="{{ entry.id }}">Delete</button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
-</div>
+
 <!-- Bootstrap JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Twój plik JavaScript -->
 <script type="module" src="{% static 'js/journal_data.js' %}"></script>
 <script type="module" src="{% static 'js/addNewEntry.js' %}"></script>
 <script src="{% static 'js/journal_style.js' %}"></script>
-<script type="module" src="{% static 'js/dashboard.js' %}"></script>
-
 </body>
 </html>
