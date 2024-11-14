@@ -136,20 +136,18 @@ from .models import JournalEntry, Pair, Strategy
 
 @login_required
 def journal_view(request):
-    # Pobieramy wszystkie wpisy użytkownika
     journal_entries = JournalEntry.objects.filter(user=request.user)
-    
-    # Pobieramy dostępne pary i strategie do filtrowania
     pairs = Pair.objects.all()
     strategies = Strategy.objects.filter(user=request.user)
 
-    # Pobieranie filtrów z GET requestu
+    # Filter parameters
     pair_filter = request.GET.get('pair_filter')
     trade_type_filter = request.GET.get('trade_type_filter')
     strategy_filter = request.GET.get('strategy_filter')
     win_filter = request.GET.get('win_filter')
+    date_sort = request.GET.get('date_sort', 'asc')  # Default to 'asc' if not provided
 
-    # Filtrowanie danych na podstawie przekazanych filtrów
+    # Apply filters
     if pair_filter:
         journal_entries = journal_entries.filter(pair=pair_filter)
     if trade_type_filter:
@@ -159,7 +157,13 @@ def journal_view(request):
     if win_filter:
         journal_entries = journal_entries.filter(win=win_filter)
 
-    # Jeśli jest to żądanie AJAX, zwracamy dane w formacie JSON
+    # Sort by entry date
+    if date_sort == 'desc':
+        journal_entries = journal_entries.order_by('-entry_date')
+    else:
+        journal_entries = journal_entries.order_by('entry_date')
+
+    # AJAX response
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         data = {
             'journal_entries': list(journal_entries.values(
@@ -178,21 +182,22 @@ def journal_view(request):
                 'stop_loss', 
                 'win', 
                 'pnl',
-                'target_choice',  # Pole Risk Reward Ratio
+                'target_choice',  
                 'target_price'
             ))
         }
         return JsonResponse(data)
 
-    # W przypadku normalnego żądania HTTP zwracamy stronę HTML
+    # HTML response
     return render(request, 'app_main/journal.html', {
         'journal_entries': journal_entries,
         'pairs': pairs,
         'strategies': strategies,
-        'selected_pair': pair_filter,          
+        'selected_pair': pair_filter,
         'selected_trade_type': trade_type_filter,
         'selected_strategy': strategy_filter,
-        'selected_win': win_filter
+        'selected_win': win_filter,
+        'selected_sort': date_sort,  # Pass selected sorting option to the template
     })
 
 

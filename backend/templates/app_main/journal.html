@@ -30,6 +30,13 @@
         <!-- Filter Form -->
         <form method="GET" action="{% url 'journal' %}" id="filter-form" class="row mb-4">
             <div class="col-md-3">
+                <label for="date_sort" class="form-label">Sort by Date:</label>
+                <select name="date_sort" id="date_sort" class="form-select">
+                    <option value="asc" {% if selected_sort == "asc" %}selected{% endif %}>Oldest to Newest</option>
+                    <option value="desc" {% if selected_sort == "desc" %}selected{% endif %}>Newest to Oldest</option>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <label for="pair_filter" class="form-label">Currency Pair:</label>
                 <select name="pair_filter" id="pair_filter" class="form-select">
                     <option value="" {% if selected_pair == "" %}selected{% endif %}>All</option>
