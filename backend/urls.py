@@ -5,7 +5,7 @@ from users import views as user_views
 from . import reports
 from . import views
 from . import strategies  # Importujemy strategies.py
-
+from . import myAccount
 
 
 urlpatterns = [
@@ -35,5 +35,11 @@ urlpatterns = [
     path('update-strategy-journal-entry/<int:entry_id>/', views.update_strategy_journal_entry, name='update_strategy_journal_entry'),
     path('winrate-by-strategy/', reports.winrate_by_strategy_view, name='winrate_by_strategy'),  # Widok dla strategii
     path('upload-attachment/<int:entry_id>/', views.upload_attachment_to_journal_entry, name='upload_attachment_to_journal_entry'),
-
+    path("account/", myAccount.my_account_view, name="my_account"),
+    path("account/send-verification-code/", myAccount.send_verification_code, name="send_verification_code"),
+    path("account/change-password/", myAccount.change_password, name="change_password"),
+    path("account/add-payment-method/", myAccount.add_payment_method, name="add_payment_method"),
+    path("account/delete-payment-method/<int:method_id>/", myAccount.delete_payment_method, name="delete_payment_method"),
+    path("account/payment-history/", myAccount.payment_history, name="payment_history"),
 ]
+

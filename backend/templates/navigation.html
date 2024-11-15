@@ -41,6 +41,13 @@
                         Reports
                     </a>
                 </li>
+                            <!-- Nowy link dla My Account -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'my_account' %}active{% endif %}" href="{% url 'my_account' %}">
+                    <i class="fas fa-user me-3"></i> <!-- Ikona dla My Account -->
+                    My Account
+                </a>
+            </li>
                 <li class="nav-item mt-auto w-100">
                     <form action="{% url 'logout' %}" method="post" class="d-flex align-items-center w-100">
                         {% csrf_token %}

@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Account</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <link rel="stylesheet" href="{% static 'css/myAccount.css' %}">
+    </head>
+<body class="app-container">
+    <!-- Nawigacja -->
+    <nav class="navbar-vertical">
+        {% include 'navigation.html' %}
+    </nav>
+
+    <!-- Główna zawartość -->
+    <div class="main-content">
+        <div class="layout-container">
+            <h3 class="text-center mb-4">My Account</h3>
+            
+            <!-- Menu zakładek -->
+            <ul class="nav nav-tabs mb-4" id="accountTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="account-settings-tab" data-bs-toggle="tab" data-bs-target="#account-settings" type="button" role="tab" aria-controls="account-settings" aria-selected="true">Account Settings</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="false">Payments</button>
+                </li>
+            </ul>
+
+            <!-- Zakładki zawartości -->
+            <div class="tab-content" id="accountTabContent">
+                <!-- Ustawienia konta -->
+                <div class="tab-pane fade show active" id="account-settings" role="tabpanel" aria-labelledby="account-settings-tab">
+                    <h4>Account Settings</h4>
+
+                    <!-- Zmiana e-maila -->
+                    <div class="section mt-4">
+                        <h5>Update Email</h5>
+                        <form>
+                            <div class="mb-3">
+                                <label for="currentEmail" class="form-label">Current Email:</label>
+                                <input type="email" class="form-control" id="currentEmail" value="user@example.com" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newEmail" class="form-label">New Email:</label>
+                                <input type="email" class="form-control" id="newEmail" required>
+                            </div>
+                            <button type="button" class="btn btn-primary">Send Verification Code</button>
+                        </form>
+                    </div>
+
+                    <!-- Zmiana hasła -->
+                    <div class="section mt-4">
+                        <h5>Change Password</h5>
+                        <form>
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Current Password:</label>
+                                <input type="password" class="form-control" id="currentPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New Password:</label>
+                                <input type="password" class="form-control" id="newPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm New Password:</label>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                            </div>
+                            <button type="button" class="btn btn-primary">Change Password</button>
+                            <a href="{% url 'password_reset' %}" class="btn btn-link">Forgot Password?</a>
+                        </form>
+                    </div>
+
+                    <!-- Wylogowanie -->
+                    <div class="section mt-4">
+                        <h5>Logout</h5>
+                        <button type="button" class="btn btn-danger">Logout from All Devices</button>
+                    </div>
+                </div>
+
+                <!-- Płatności -->
+                <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+                    <h4>Payments</h4>
+
+                    <!-- Dane płatności -->
+                    <div class="section mt-4">
+                        <h5>Saved Payment Methods</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Visa **** 1234
+                                <button class="btn btn-outline-danger btn-sm">Delete</button>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                PayPal - user@example.com
+                                <button class="btn btn-outline-danger btn-sm">Delete</button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Dodawanie nowej metody płatności -->
+                    <div class="section mt-4">
+                        <h5>Add Payment Method</h5>
+                        <form>
+                            <div class="mb-3">
+                                <label for="cardNumber" class="form-label">Card Number:</label>
+                                <input type="text" class="form-control" id="cardNumber" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="expiryDate" class="form-label">Expiry Date:</label>
+                                    <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="cvv" class="form-label">CVV:</label>
+                                    <input type="text" class="form-control" id="cvv" required>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary">Save Payment Method</button>
+                        </form>
+                    </div>
+
+                    <!-- Historia płatności -->
+                    <div class="section mt-4">
+                        <h5>Payment History</h5>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2023-05-01</td>
+                                    <td>$29.99</td>
+                                    <td>Completed</td>
+                                    <td>Invoice #123456, Visa</td>
+                                </tr>
+                                <tr>
+                                    <td>2023-04-01</td>
+                                    <td>$29.99</td>
+                                    <td>Completed</td>
+                                    <td>Invoice #123455, PayPal</td>
+                                </tr>
+                                <!-- Additional transactions go here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/myAccount.js' %}"></script>
+</body>
+</html>
